@@ -32,6 +32,11 @@ I planned this project to be a fullstack web application with map on wich you co
 
 ## Plan
 
+1. Initilize basic backend and fronted 
+2. Design database schema 
+3. Add EF core
+4. To be continued...
+
 TODO
 ## Support
 
