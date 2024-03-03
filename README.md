@@ -32,10 +32,12 @@ I planned this project to be a fullstack web application with map on wich you co
 
 ## Plan
 
-1. Initilize basic backend and fronted 
-2. Design database schema 
-3. Add EF core
-4. To be continued...
+1. Initilize backend project structure following clean architecture and add basic configuration
+2. Choose database (Mongo or SQL Server)
+3. Design database and create database diagram
+4. Add models in backend and create database by code-first approach
+5. Add endpoint for event CRUD operations
+6. To be continued...
 
 TODO
 ## Support
