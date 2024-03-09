@@ -34,6 +34,7 @@ I planned this project to be a fullstack web application with map on wich you co
 
 1. Initilize backend project structure following clean architecture and add basic configuration
 2. Add core domain classes
+3. add libraries and interfaces
 3. Choose database (Mongo or SQL Server)
 4. Design database and create database diagram
 5. Add models in backend and create database by code-first approach
