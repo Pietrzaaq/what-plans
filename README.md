@@ -39,7 +39,9 @@ I planned this project to be a fullstack web application with map on wich you co
 4. Design database and create database diagram
 5. Add models in backend and create database by code-first approach
 6. Add endpoint for event CRUD operations
-7. To be continued...
+7. Initlize frontend vue project from sakai prime vue template
+8. Add leaflet library
+9. To be continued...
 
 ## Support
 
