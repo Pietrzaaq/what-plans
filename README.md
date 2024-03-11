@@ -33,13 +33,16 @@ I planned this project to be a fullstack web application with map on wich you co
 ## Plan
 
 1. Initilize backend project structure following clean architecture and add basic configuration
-2. Choose database (Mongo or SQL Server)
-3. Design database and create database diagram
-4. Add models in backend and create database by code-first approach
-5. Add endpoint for event CRUD operations
-6. To be continued...
+2. Add core domain classes
+3. add libraries and interfaces
+3. Choose database (Mongo or SQL Server)
+4. Design database and create database diagram
+5. Add models in backend and create database by code-first approach
+6. Add endpoint for event CRUD operations
+7. Initlize frontend vue project from sakai prime vue template
+8. Add leaflet library
+9. To be continued...
 
-TODO
 ## Support
 
 I will gladly accept advice or help
