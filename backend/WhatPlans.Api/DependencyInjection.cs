@@ -1,4 +1,6 @@
 ﻿
+using WhatPlans.Api.Converters;
+
 namespace WhatPlans.Api;
 
 public static class DependencyInjection
@@ -9,6 +11,13 @@ public static class DependencyInjection
         services.AddSwaggerGen();
         services.AddControllers();
 
+        services.AddMvc(options =>
+        {
+        }).AddNewtonsoftJson(options =>
+        {
+            options.SerializerSettings.Converters.Insert(0, new EntityIdConverter());
+        });
+        
         return services;
     }
 }

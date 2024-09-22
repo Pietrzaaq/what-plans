@@ -1,10 +1,10 @@
-﻿using MongoDB.Bson;
+﻿using WhatPlans.Domain.Common;
 
 namespace WhatPlans.Domain.Entities;
 
 public class Artist
 {
-    public ObjectId Id { get; set; }
-    public ObjectId PersonId { get; set; }
+    public EntityId Id { get; set; }
+    public EntityId UserId { get; set; }
     public string Name { get; set; }
 }
