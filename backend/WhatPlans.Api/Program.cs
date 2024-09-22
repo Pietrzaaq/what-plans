@@ -1,20 +1,45 @@
+using WhatPlans.Api;
+using WhatPlans.Application;
+using WhatPlans.Infrastructure;
+
 var builder = WebApplication.CreateBuilder(args);
-
-builder.Services.AddEndpointsApiExplorer();
-builder.Services.AddSwaggerGen();
-
-var app = builder.Build();
-if (app.Environment.IsDevelopment())
 {
-    app.UseSwagger();
-    app.UseSwaggerUI();
+    var allowOrigins = "AllowOrigins";
+
+    builder.Services.AddCors(options =>
+    {
+        options.AddPolicy(name: allowOrigins,
+            policy  =>
+            {
+                policy.WithOrigins()
+                    .AllowAnyHeader()
+                    .AllowAnyMethod()
+                    .AllowAnyOrigin();
+            });
+    });
+
+    builder.Services.AddEndpointsApiExplorer();
+    builder.Services.AddSwaggerGen();
+
+    builder.Services
+        .AddApplication()
+        .AddInfrastructure(builder.Configuration)
+        .AddPresentation();
 }
 
-app.UseHttpsRedirection();
+var app = builder.Build();
+{
+    if (app.Environment.IsDevelopment())
+    {
+        app.UseSwagger();
+        app.UseSwaggerUI();
+    }
 
-app.MapGet("/", () => "HelloWorld")
-.WithName("WhatPlans.Api")
-.WithOpenApi();
+    app.UseHttpsRedirection();
+    app.MapControllers();
+    app.UseHttpsRedirection();
 
-app.Run();
+    app.Run();
+}
+
 

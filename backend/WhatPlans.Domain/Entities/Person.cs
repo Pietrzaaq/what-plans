@@ -1,8 +1,10 @@
-﻿namespace WhatPlans.Domain.Entities;
+﻿using MongoDB.Bson;
+
+namespace WhatPlans.Domain.Entities;
 
 public class Person
 {
-    public string Id { get; set; }
+    public ObjectId Id { get; set; }
     public string FirstName { get; set; }
     public string LastName { get; set; }
     public DateTime BirthDate { get; set; }

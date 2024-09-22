@@ -1,0 +1,38 @@
+﻿using System.Net;
+using MediatR;
+using Microsoft.AspNetCore.Mvc;
+
+namespace WhatPlans.Api.Controllers;
+
+[Controller]
+[Route("api")]
+public class BaseController : ControllerBase
+{
+    private readonly IMediator _mediator;
+
+    public BaseController(IMediator mediator)
+    {
+        _mediator = mediator;
+    }
+    
+    protected async Task<IActionResult> ExecuteAsync<TRequest>(TRequest request)
+    {
+        try
+        {
+            var result = await _mediator.Send(request);
+
+            if (request is IRequest)
+                return NoContent();
+
+            return Ok(result);
+        }
+        catch (Exception e)
+        {
+            return StatusCode((int)HttpStatusCode.InternalServerError, e.Message);
+        }
+        finally
+        {
+            Console.WriteLine("After request");
+        }
+    }
+}

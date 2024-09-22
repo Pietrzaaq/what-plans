@@ -50,7 +50,6 @@ lerna-debug.log*
 package-lock.json
 yarn.lock
 
-.DS_Store
 dist
 dist-ssr
 coverage
@@ -63,7 +62,6 @@ coverage
 .vscode/*
 !.vscode/extensions.json
 .idea
-*.suo
 *.ntvs*
 *.njsproj
 *.sw?
