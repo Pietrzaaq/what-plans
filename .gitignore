@@ -47,6 +47,7 @@ lerna-debug.log*
 
 # dependencies
 /node_modules
+/frontend/node_modules
 package-lock.json
 yarn.lock
 
@@ -65,3 +66,15 @@ coverage
 *.ntvs*
 *.njsproj
 *.sw?
+
+
+# dependencies
+.env.development
+
+# Themes
+public/themes/soho-light/
+public/themes/soho-dark/
+public/themes/viva-light/
+public/themes/viva-dark/
+public/themes/mira/
+public/themes/nano/

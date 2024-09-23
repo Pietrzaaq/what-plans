@@ -1,0 +1,58 @@
+﻿:root {
+    --primary-background-color: #720e9e;
+    --primary-background-gradient: linear-gradient(45deg, #4158D0 0%, #C850C0 53%, #FFCC70 99%);
+    --map-purple: #720e9e;
+    --map-purple-light: #EE82EE;
+    --map-purple-dark: #4B0082;
+    --primary-background-color-dark: #2b2b2b;
+    --primary-background-color-dark-light: #5c5c5c;
+    --primary-font-color: #ffffff;
+}
+
+.map-context-menu {
+    border-radius: 0 1.5rem 1.5rem 1.5rem !important;
+}
+
+.side-bar-header-search-bar-autocomplete .p-autocomplete-input {
+    width: 100%;
+}
+
+.leaflet-pane > svg path.leaflet-interactive:hover {
+    color: black;
+    stroke: black;
+    fill: black;
+}
+
+.leaflet-popup .leaflet-popup-tip-container {
+    display: none
+}
+
+.leaflet-popup-content-wrapper {
+    border: none !important;
+    box-shadow: none !important;
+    background-color: transparent !important;
+}
+
+.leaflet-popup-content {
+    width: fit-content !important;
+}
+
+.area-popup {
+    display: flex;
+    flex-direction: column;
+    padding: 0 !important;
+    min-width: 15rem !important;
+    max-width: 15rem !important;
+    min-height: 20rem !important;
+    max-height: 35rem !important;
+}
+
+.v-enter-active,
+.v-leave-active {
+    transition: opacity 0.25s ease;
+}
+
+.v-enter-from,
+.v-leave-to {
+    opacity: 0;
+}

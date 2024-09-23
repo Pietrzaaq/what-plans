@@ -32,7 +32,6 @@ public class BaseController : ControllerBase
         }
         finally
         {
-            Console.WriteLine("After request");
         }
     }
 }
