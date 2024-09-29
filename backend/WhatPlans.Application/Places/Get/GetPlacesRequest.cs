@@ -4,6 +4,6 @@ using WhatPlans.Domain.Entities;
 
 namespace WhatPlans.Application.Places.Get;
 
-public class GetPlacesQuery : IRequest<List<Place>>
+public class GetPlacesRequest : IRequest<List<Place>>
 {
 }

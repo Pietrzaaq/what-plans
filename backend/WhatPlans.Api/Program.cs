@@ -2,10 +2,10 @@ using WhatPlans.Api;
 using WhatPlans.Application;
 using WhatPlans.Infrastructure;
 
+var allowOrigins = "AllowOrigins";
+
 var builder = WebApplication.CreateBuilder(args);
 {
-    var allowOrigins = "AllowOrigins";
-
     builder.Services.AddCors(options =>
     {
         options.AddPolicy(name: allowOrigins,
@@ -38,6 +38,7 @@ var app = builder.Build();
     app.UseHttpsRedirection();
     app.MapControllers();
     app.UseHttpsRedirection();
+    app.UseCors(allowOrigins);
 
     app.Run();
 }

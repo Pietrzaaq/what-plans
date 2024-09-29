@@ -1,5 +1,4 @@
-﻿using MongoDB.Bson;
-using WhatPlans.Domain.Common;
+﻿using WhatPlans.Domain.Common;
 
 namespace WhatPlans.Domain.Entities;
 
@@ -15,5 +14,5 @@ public class Place
     public double Longitude { get; set; }
     public string Polygon { get; set; }
     public int Capacity { get; set; }
-    public EntityId[] ImageIds { get; set; }
+    public List<EntityId> ImageIds => new List<EntityId>();
 }

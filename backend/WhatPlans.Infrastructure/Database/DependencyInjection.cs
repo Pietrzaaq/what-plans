@@ -2,6 +2,7 @@
 using Microsoft.Extensions.DependencyInjection;
 using MongoDB.Bson.Serialization;
 using WhatPlans.Application.Interfaces;
+using WhatPlans.Domain.Common;
 using WhatPlans.Infrastructure.Serializers;
 
 namespace WhatPlans.Infrastructure.Database;
