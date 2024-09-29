@@ -1,11 +1,11 @@
-﻿using WhatPlans.Domain.Common;
+﻿using MongoDB.Bson;
 
 namespace WhatPlans.Domain.Entities;
 
 public class Place
 {
-    public EntityId Id { get; set; }
-    public EntityId CreatorId { get; set; }
+    public ObjectId Id { get; set; }
+    public ObjectId? CreatorId { get; set; }
     public string Name { get; set; }
     public string Address { get; set; }
     public string Description { get; set; }
@@ -14,5 +14,5 @@ public class Place
     public double Longitude { get; set; }
     public string Polygon { get; set; }
     public int Capacity { get; set; }
-    public List<EntityId> ImageIds => new List<EntityId>();
+    public List<ObjectId> ImageIds => new List<ObjectId>();
 }

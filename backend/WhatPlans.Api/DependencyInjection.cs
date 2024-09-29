@@ -15,7 +15,7 @@ public static class DependencyInjection
         {
         }).AddNewtonsoftJson(options =>
         {
-            options.SerializerSettings.Converters.Insert(0, new EntityIdConverter());
+            options.SerializerSettings.Converters.Insert(0, new ObjectIdConverter());
         });
         
         return services;

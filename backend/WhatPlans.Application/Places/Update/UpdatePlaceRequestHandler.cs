@@ -1,4 +1,5 @@
 ﻿using MediatR;
+using MongoDB.Bson;
 using MongoDB.Driver;
 using WhatPlans.Application.Interfaces;
 using WhatPlans.Domain.Entities;
@@ -18,7 +19,7 @@ public class UpdatePlaceRequestHandler : IRequestHandler<UpdatePlaceRequest, Pla
     {
         var updatedPlace = new Place()
         {
-            Id = request.Id,
+            Id = new ObjectId(request.Id),
             Name = request.Body.Name
         };
         

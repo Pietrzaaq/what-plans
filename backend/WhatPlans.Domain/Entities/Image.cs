@@ -1,14 +1,14 @@
-﻿using WhatPlans.Domain.Common;
+﻿using MongoDB.Bson;
 
 namespace WhatPlans.Domain.Entities;
 
 public class Image
 {
-    public EntityId ImageId { get; set; }
+    public ObjectId ImageId { get; set; }
 
     public byte[] BinaryData { get; set; }  
 
-    public EntityId RelatedObjectId { get; set; } 
+    public ObjectId RelatedObjectId { get; set; } 
 
     public string RelatedObjectType { get; set; } 
 
@@ -16,7 +16,7 @@ public class Image
 
     public string Description { get; set; }  
 
-    public EntityId UploadedBy { get; set; }
+    public ObjectId UploadedBy { get; set; }
 
     public DateTime UploadDate { get; set; } 
 

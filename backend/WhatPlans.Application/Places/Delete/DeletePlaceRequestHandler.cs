@@ -1,7 +1,8 @@
 ﻿using MediatR;
+using MongoDB.Bson;
 using MongoDB.Driver;
 using WhatPlans.Application.Interfaces;
-using WhatPlans.Domain.Common;
+
 using WhatPlans.Domain.Entities;
 
 namespace WhatPlans.Application.Places.Delete;
@@ -17,7 +18,7 @@ public class DeletePlaceRequestHandler : IRequestHandler<DeletePlaceRequest>
     
     public async Task Handle(DeletePlaceRequest request, CancellationToken cancellationToken)
     {
-        var filter = Builders<Place>.Filter.Eq(p => p.Id, new EntityId(request.Id));
+        var filter = Builders<Place>.Filter.Eq(p => p.Id, new ObjectId(request.Id));
         
         await _mongoContext.Places.DeleteOneAsync(filter, cancellationToken);
     }
