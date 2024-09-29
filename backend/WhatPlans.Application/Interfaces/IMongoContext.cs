@@ -8,4 +8,5 @@ public interface IMongoContext
     IMongoDatabase Database { get; }
     
     IMongoCollection<Place> Places { get; }
+    IMongoCollection<Event> Events { get; }
 }
