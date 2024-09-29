@@ -19,7 +19,7 @@ public class UpdatePlaceRequestHandler : IRequestHandler<UpdatePlaceRequest, Pla
     {
         var updatedPlace = new Place()
         {
-            Id = new ObjectId(request.Id),
+            Id = request.Id,
             Name = request.Body.Name
         };
         

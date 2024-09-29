@@ -20,7 +20,6 @@ public class PlacesController : BaseController
     [HttpGet("{id}")]
     public Task<IActionResult> GetPlaceById(GetPlaceByIdRequest request)
         => ExecuteAsync(request);
-    
     [HttpPost]
     public Task<IActionResult> Create(CreatePlaceRequest request)
         => ExecuteAsync(request);

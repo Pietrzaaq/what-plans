@@ -1,5 +1,4 @@
-﻿
-using WhatPlans.Api.Converters;
+﻿using WhatPlans.Api.Converters;
 
 namespace WhatPlans.Api;
 

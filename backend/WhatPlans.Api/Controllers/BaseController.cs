@@ -1,4 +1,5 @@
 ﻿using System.Net;
+using FluentValidation;
 using MediatR;
 using Microsoft.AspNetCore.Mvc;
 
@@ -25,6 +26,10 @@ public class BaseController : ControllerBase
                 return NoContent();
 
             return Ok(result);
+        }
+        catch (ValidationException e)
+        {
+            return BadRequest(e.Errors);
         }
         catch (Exception e)
         {
