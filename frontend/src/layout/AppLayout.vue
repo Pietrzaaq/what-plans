@@ -1,15 +1,17 @@
 <script setup>
-import { computed, watch, ref } from 'vue';
+import { computed, watch, ref, onBeforeMount } from 'vue';
 import { useRoute } from 'vue-router';
 import AppTopbar from './AppTopbar.vue';
 import AppFooter from './AppFooter.vue';
 import AppSidebar from './AppSidebar.vue';
 import AppConfig from './AppConfig.vue';
 import { useLayout } from '@/layout/composables/layout';
+import { useGlobalStore } from "../stores/global.js";
 
 const { layoutConfig, layoutState, isSidebarActive } = useLayout();
 
 const outsideClickListener = ref(null);
+const globalStore = useGlobalStore();
 
 watch(isSidebarActive, (newVal) => {
     if (newVal) {
@@ -57,12 +59,16 @@ const isOutsideClicked = (event) => {
     return !(sidebarEl.isSameNode(event.target) || sidebarEl.contains(event.target) || topbarEl.isSameNode(event.target) || topbarEl.contains(event.target));
 };
 
-const route = useRoute()
+const route = useRoute();
 
 const isMapRoute = computed(() => {
-  console.log(route)
-  return route.name === 'map'
-})
+  console.log(route);
+  return route.name === 'map';
+});
+
+onBeforeMount(() => {
+    globalStore.initialize();
+});
 </script>
 
 <template>
@@ -72,7 +78,7 @@ const isMapRoute = computed(() => {
             <app-sidebar></app-sidebar>
         </div>
         <div v-if="isMapRoute" class="layout-map-container">
-          <router-view></router-view>
+            <router-view></router-view>
         </div>
         <div v-else class="layout-main-container">
             <div class="layout-main">

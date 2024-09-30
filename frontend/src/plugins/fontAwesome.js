@@ -15,7 +15,8 @@ import {
     faCircleQuestion,
     faInfinity, 
     faTableTennisPaddleBall,
-    faCoffee
+    faCoffee,
+    faLocationDot
 } from '@fortawesome/free-solid-svg-icons';
 
 library.add(
@@ -33,7 +34,8 @@ library.add(
     faCircleQuestion, 
     faInfinity, 
     faTableTennisPaddleBall,
-    faCoffee);
+    faCoffee,
+    faLocationDot);
 
 export function initFontAwesome(app) {
     app.component('font-awesome-icon', FontAwesomeIcon);

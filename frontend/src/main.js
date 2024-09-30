@@ -107,6 +107,7 @@ import { initFontAwesome } from '@/plugins/fontAwesome.js';
 import { FontAwesomeIcon } from '@fortawesome/vue-fontawesome';
 import '@fortawesome/fontawesome-free/css/all.css';
 import { createPinia } from "pinia";
+import LongText from "@/components/shared/LongText.vue";
 
 const app = createApp(App);
 
@@ -217,3 +218,5 @@ app.component('VirtualScroller', VirtualScroller);
 initFontAwesome(app);
 app.component('font-awesome-icon', FontAwesomeIcon);
 app.mount('#app');
+
+app.component('LongText', LongText);

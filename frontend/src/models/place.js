@@ -1,14 +1,13 @@
 ﻿export default class Place  {
     constructor(
+        id,
         name,
-        streetAddress,
-        isOutdoorArea = false,
+        address,
         latitude,
         longitude
     ) {
         this.name = name;
-        this.streetAddress = streetAddress;
-        this.isOutdoorArea = isOutdoorArea;
+        this.address = address;
         this.latitude = latitude;
         this.longitude = longitude;
     }

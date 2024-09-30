@@ -98,18 +98,8 @@ const applyScale = () => {
         <h5>Material Design Compact</h5>
         <div class="grid">
             <div class="col-3">
-                <button class="p-link w-2rem h-2rem" @click="onChangeTheme('mdc-light-indigo', 'light')">
-                    <img src="/layout/images/themes/md-light-indigo.svg" class="w-2rem h-2rem" alt="Material Light Indigo" />
-                </button>
-            </div>
-            <div class="col-3">
                 <button class="p-link w-2rem h-2rem" @click="onChangeTheme('mdc-light-deeppurple', 'light')">
                     <img src="/layout/images/themes/md-light-deeppurple.svg" class="w-2rem h-2rem" alt="Material Light Deep Purple" />
-                </button>
-            </div>
-            <div class="col-3">
-                <button class="p-link w-2rem h-2rem" @click="onChangeTheme('mdc-dark-indigo', 'dark')">
-                    <img src="/layout/images/themes/md-dark-indigo.svg" class="w-2rem h-2rem" alt="Material Dark Indigo" />
                 </button>
             </div>
             <div class="col-3">

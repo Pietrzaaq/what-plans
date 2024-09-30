@@ -1,69 +1,55 @@
 <script setup>
 import { ref } from 'vue';
-
 import AppMenuItem from './AppMenuItem.vue';
+import { FontAwesomeIcon } from "@fortawesome/vue-fontawesome";
+import { useGlobalStore } from "@/stores/global.js";
+import { menuItems } from "@/layout/menuItems.js";
+import { storeToRefs } from "pinia";
 
-const model = ref([
-    {
-        label: 'Home',
-        items: [{ label: 'Map', icon: 'pi pi-fw pi-home', to: '/' }]
-    },
-    {
-        label: 'Pages',
-        icon: 'pi pi-fw pi-briefcase',
-        to: '/pages',
-        items: [
-            {
-                label: 'Auth',
-                icon: 'pi pi-fw pi-user',
-                items: [
-                    {
-                        label: 'Login',
-                        icon: 'pi pi-fw pi-sign-in',
-                        to: '/auth/login'
-                    },
-                    {
-                        label: 'Error',
-                        icon: 'pi pi-fw pi-times-circle',
-                        to: '/auth/error'
-                    },
-                    {
-                        label: 'Access Denied',
-                        icon: 'pi pi-fw pi-lock',
-                        to: '/auth/access'
-                    }
-                ]
-            },
-            {
-                label: 'Crud',
-                icon: 'pi pi-fw pi-pencil',
-                to: '/pages/crud'
-            },
-            {
-                label: 'Timeline',
-                icon: 'pi pi-fw pi-calendar',
-                to: '/pages/timeline'
-            },
-            {
-                label: 'Not Found',
-                icon: 'pi pi-fw pi-exclamation-circle',
-                to: '/pages/notfound'
-            },
-            {
-                label: 'Empty',
-                icon: 'pi pi-fw pi-circle-off',
-                to: '/pages/empty'
-            }
-        ]
-    },
-]);
+const model = ref(menuItems);
+const globalStore = useGlobalStore();
+const { cities, city, isLoading } = storeToRefs(globalStore);
+
+const onCityUpdate = (value) => {
+    globalStore.setCity(value);
+    globalStore.setCenter(value.latitude, value.longitude);
+};
+
 </script>
 
 <template>
+    <div class="relative flex align-items-center w-full pt-2">
+        <font-awesome-icon class="absolute z-5 pl-3" icon="fas fa-location-dot" size="lg"></font-awesome-icon>
+        <Dropdown 
+            v-if="!isLoading"
+            class="w-full px-2"
+            v-model="city"
+            :options="cities"
+            :virtual-scroller-options="{ itemSize: 50 }"
+            input-class="ml-4"
+            filter 
+            placeholder="Select a City"
+            option-label="name" 
+            @update:modelValue="onCityUpdate">
+            <template #value="{ value }">
+                <div v-if="value" class="flex align-items-center">
+                    <div>{{ value.name }}</div>
+                </div>
+            </template>
+            <template #option="{ option }">
+                <div class="flex flex-column justify-content-center gap-2">
+                    <div class="font-medium text-sm">
+                        <LongText :text="option.name">{{ option.name }}</LongText>
+                    </div>
+                    <div class="text-xs font-light">
+                        <LongText :text="option.province">{{ option.province }}</LongText>
+                    </div>
+                </div>
+            </template>
+        </Dropdown>
+        <Skeleton v-else class="w-full" height="3rem"></Skeleton>
+    </div>
     <ul class="layout-menu">
-        <div class=" p-fluid">
-            <auto-complete style="display:flex; width: 100%" placeholder="Search for events..."></auto-complete>
-        </div>
         <template v-for="(item, i) in model" :key="item">
             <app-menu-item v-if="!item.separator" :item="item" :index="i"></app-menu-item>
             <li v-if="item.separator" class="menu-separator"></li>
