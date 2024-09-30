@@ -19,7 +19,15 @@ public class CreateEventRequestHandler : IRequestHandler<CreateEventRequest, Eve
         var newEvent = new Event()
         {
             Id = ObjectId.GenerateNewId(),
-            Name = request.Event.Name,
+            PlaceId = request.Body.PlaceId,
+            Location = request.Body.Location,
+            CreatorId = request.Body.CreatorId,
+            Type = request.Body.Type,
+            Name = request.Body.Name,
+            StartDate = request.Body.StartDate,
+            EndDate = request.Body.EndDate,
+            Duration = request.Body.EndDate is null ? null : (request.Body.EndDate - request.Body.StartDate).Value.Minutes,
+            ImageUrls = request.Body.ImageUrls
         };
         
         await _mongoContext.Events.InsertOneAsync(newEvent, cancellationToken: cancellationToken);

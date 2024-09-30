@@ -19,7 +19,15 @@ public class CreatePlaceRequestHandler : IRequestHandler<CreatePlaceRequest, Pla
         var place = new Place()
         {
             Id = ObjectId.GenerateNewId(),
-            Name = request.Place.Name,
+            Type = request.Body.Type,
+            CreatorId = request.Body.CreatorId,
+            Name = request.Body.Name,
+            Location = request.Body.Location,
+            Description = request.Body.Description,
+            Url = request.Body.Url,
+            Mail = request.Body.Mail,
+            Polygon = request.Body.Polygon,
+            Capacity = request.Body.Capacity,
         };
         
         await _mongoContext.Places.InsertOneAsync(place, cancellationToken: cancellationToken);
