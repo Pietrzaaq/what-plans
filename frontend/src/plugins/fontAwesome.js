@@ -19,7 +19,12 @@ import {
     faLocationDot,
     faFilter, 
     faCalendarDays,
-    faMapPin
+    faMapPin,
+    faHandPointer,
+    faMasksTheater,
+    faMusic,
+    faUtensils,
+    faGlassCheers
 } from '@fortawesome/free-solid-svg-icons';
 
 library.add(
@@ -41,7 +46,12 @@ library.add(
     faLocationDot,
     faFilter,
     faCalendarDays,
-    faMapPin);
+    faMapPin,
+    faHandPointer,    
+    faMasksTheater,
+    faMusic,
+    faUtensils,
+    faGlassCheers);
 
 export function initFontAwesome(app) {
     app.component('font-awesome-icon', FontAwesomeIcon);
