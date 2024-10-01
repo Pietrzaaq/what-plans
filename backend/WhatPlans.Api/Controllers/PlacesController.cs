@@ -17,6 +17,10 @@ public class PlacesController : BaseController
     public Task<IActionResult> GetPlaces(GetPlacesRequest request)
         => ExecuteAsync(request);
     
+    [HttpGet("events")]
+    public Task<IActionResult> GetPlacesWithEvents(GetPlacesWithEventsRequest request)
+        => ExecuteAsync(request);
+    
     [HttpGet("{id}")]
     public Task<IActionResult> GetPlaceById(GetPlaceByIdRequest request)
         => ExecuteAsync(request);

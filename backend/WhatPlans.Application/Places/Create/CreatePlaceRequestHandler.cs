@@ -19,7 +19,7 @@ public class CreatePlaceRequestHandler : IRequestHandler<CreatePlaceRequest, Pla
         var place = new Place()
         {
             Id = ObjectId.GenerateNewId(),
-            Type = request.Body.Type,
+            PlaceType = request.Body.Type,
             CreatorId = request.Body.CreatorId,
             Name = request.Body.Name,
             Location = request.Body.Location,

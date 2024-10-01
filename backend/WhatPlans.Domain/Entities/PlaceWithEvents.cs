@@ -5,10 +5,12 @@ using WhatPlans.Domain.Enums;
 
 namespace WhatPlans.Domain.Entities;
 
-public class Place
+[BsonIgnoreExtraElements]
+public class PlaceWithEvents
 {
     public ObjectId Id { get; set; }
-    public PlaceTypes PlaceType { get; set; }
+    [BsonRepresentation(BsonType.String)]
+    public PlaceTypes Type { get; set; }       
     public string CreatorId { get; set; }
     public string Name { get; set; }
     public Location Location { get; set; }
@@ -18,4 +20,5 @@ public class Place
     public string Polygon { get; set; }
     public int? Capacity { get; set; }
     public List<string> ImageUrls { get; set; }
+    public List<Event> Events { get; set; }
 }

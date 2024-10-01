@@ -22,7 +22,7 @@ public class CreateEventRequestHandler : IRequestHandler<CreateEventRequest, Eve
             PlaceId = request.Body.PlaceId,
             Location = request.Body.Location,
             CreatorId = request.Body.CreatorId,
-            Type = request.Body.Type,
+            EventType = request.Body.Type,
             Name = request.Body.Name,
             StartDate = request.Body.StartDate,
             EndDate = request.Body.EndDate,
