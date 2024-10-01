@@ -6,8 +6,8 @@ export const usePlacesStore = defineStore(
     'places', () => {
     const _places = ref([]);
     const places = computed(() => _places.value);
-    async function loadAll() {
-        const result = await placesService.getAll();
+    async function loadAll(includeEvents) {
+        const result = await placesService.getAllWithEvents(includeEvents);
 
         _places.value = result.data;
     }

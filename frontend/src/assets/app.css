@@ -42,7 +42,7 @@
     flex-direction: column;
     padding: 0 !important;
     min-width: 15rem !important;
-    max-width: 15rem !important;
+    max-width: 25rem !important;
     min-height: 20rem !important;
     max-height: 35rem !important;
 }

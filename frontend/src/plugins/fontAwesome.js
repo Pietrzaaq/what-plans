@@ -13,10 +13,11 @@ import {
     faFutbol,
     faVolleyball,
     faCircleQuestion,
-    faInfinity, 
+    faInfinity,
     faTableTennisPaddleBall,
     faCoffee,
-    faLocationDot
+    faLocationDot, 
+    faFilter
 } from '@fortawesome/free-solid-svg-icons';
 
 library.add(
@@ -35,7 +36,8 @@ library.add(
     faInfinity, 
     faTableTennisPaddleBall,
     faCoffee,
-    faLocationDot);
+    faLocationDot,
+    faFilter);
 
 export function initFontAwesome(app) {
     app.component('font-awesome-icon', FontAwesomeIcon);
