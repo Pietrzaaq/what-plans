@@ -28,6 +28,7 @@ public class CreatePlaceRequestHandler : IRequestHandler<CreatePlaceRequest, Pla
             Mail = request.Body.Mail,
             Polygon = request.Body.Polygon,
             Capacity = request.Body.Capacity,
+            ImageUrls = request.Body.ImageUrls
         };
         
         await _mongoContext.Places.InsertOneAsync(place, cancellationToken: cancellationToken);

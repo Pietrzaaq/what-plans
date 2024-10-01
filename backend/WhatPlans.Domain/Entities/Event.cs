@@ -7,7 +7,7 @@ namespace WhatPlans.Domain.Entities;
 public class Event
 {
     public ObjectId Id { get; set; }
-    public EventTypes Type { get; set; }
+    public EventTypes EventType { get; set; }
     public ObjectId? PlaceId { get; set; }
     public string CreatorId { get; set; }
     public string Name { get; set; }

@@ -22,5 +22,6 @@ public class CreatePlaceRequest : IRequest<Place>
         public string Mail { get; set; }
         public string Polygon { get; set; }
         public int? Capacity { get; set; }
+        public List<string> ImageUrls { get; set; }
     }
 }

@@ -9,8 +9,7 @@ namespace WhatPlans.Domain.Entities;
 public class PlaceWithEvents
 {
     public ObjectId Id { get; set; }
-    [BsonRepresentation(BsonType.String)]
-    public PlaceTypes Type { get; set; }       
+    public PlaceTypes PlaceType { get; set; }       
     public string CreatorId { get; set; }
     public string Name { get; set; }
     public Location Location { get; set; }
