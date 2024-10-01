@@ -56,3 +56,11 @@
 .v-leave-to {
     opacity: 0;
 }
+
+.p-galleria-indicators {
+    background-color: transparent;
+}
+
+.p-galleria-indicator.p-highlight button {
+    background-color: var(--gray-300) !important;
+}

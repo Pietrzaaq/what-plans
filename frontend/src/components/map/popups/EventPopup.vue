@@ -3,15 +3,18 @@ import { computed, onMounted, ref, toRef, watch } from 'vue';
 import { usePlacesStore } from "@/stores/places.js";
 import moment from "moment";
 import { FontAwesomeIcon } from "@fortawesome/vue-fontawesome";
+import FavoriteButton from "@/components/shared/FavoriteButton.vue";
+import { useFavoritesStore } from "@/stores/favorites.js";
 
 const props = defineProps(['teleportTo', 'popupEvent']);
 
 const teleportToRef = toRef(props.teleportTo);
 const event = toRef(props.popupEvent);
 const place = ref(null);
-const favorites = ref([]);
+const startDate = computed(() => moment(event.value.startDate).format('LLL'));
+
+const favoritesStore = useFavoritesStore();
 const isFavorite = ref(false);
-const startDate = computed(() => moment(event.value.startDate).format('LL'));
 watch(teleportToRef, function () {});
 
 function buyTicket() {
@@ -19,17 +22,7 @@ function buyTicket() {
 }
 
 function toggleFavorite() {
-    if (isFavorite.value) {
-        // Remove from favorites
-        const updatedFavorites = favorites.value.filter(id => id !== event.value.id);
-        favorites.value = updatedFavorites;
-        localStorage.setItem('favoritesEventsIds', JSON.stringify(updatedFavorites));
-    } else {
-        // Add to favorites
-        favorites.value.push(event.value.id);
-        localStorage.setItem('favoritesEventsIds', JSON.stringify(favorites.value));
-    }
-
+    favoritesStore.toggleEventFavorite(event.value.id, isFavorite.value);
     isFavorite.value = !isFavorite.value;
 }
 
@@ -40,9 +33,7 @@ onMounted(() => {
         place.value = places.find(p => p.id === event.value.placeId);
     }
 
-    const favoritesFromStorage = localStorage.getItem('favoritesEventsIds');
-    favorites.value = favoritesFromStorage ? JSON.parse(favoritesFromStorage) : [];
-    isFavorite.value = favorites.value.includes(event.value.id);
+    isFavorite.value = favoritesStore.isEventFavorite(event.value.id);
 });
 </script>
 
@@ -52,12 +43,7 @@ onMounted(() => {
             <Card  class="area-popup">
                 <template #header>
                     <div class="relative flex flex-column">
-                        <Button
-                            text
-                            :icon="isFavorite ? 'fas fa-heart' : 'far fa-heart'"
-                            class="absolute fa-2xl align-self-end mr-3"
-                            style="z-index: 100; color: white" 
-                            @click="toggleFavorite"></Button>
+                        <FavoriteButton :is-favorite="isFavorite" @toggle-favorite="toggleFavorite" />
                         <Galleria
                             v-if="event"
                             :value="event.imageUrls"
@@ -83,13 +69,18 @@ onMounted(() => {
                 <template #content>
                     <div style="overflow-y: auto;">
                         <div v-if="place">
-                            <span class="font-medium">Address:</span> 
+                            <div>
+                                <font-awesome-icon icon="fas fa-map-pin"></font-awesome-icon>
+                                <span class="font-medium ml-1">Address:</span>
+                            </div>
                             <div>{{ place.location.address }}</div>
                         </div>
                         <br>
                         <div class="w-full">
-                            <font-awesome-icon icon="fas fa-calendar"></font-awesome-icon>
-                            <span class="font-medium ml-1">Date:</span>
+                            <div>
+                                <font-awesome-icon icon="fas fa-calendar-days"></font-awesome-icon>
+                                <span class="font-medium ml-1">Date:</span>
+                            </div>
                             <div class="text-lg">{{ startDate }}</div>
                         </div>
                     </div>

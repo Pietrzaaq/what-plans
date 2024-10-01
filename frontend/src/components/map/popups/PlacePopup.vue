@@ -1,37 +1,35 @@
 ﻿<script setup>
-import { onMounted, ref, toRef, watch } from 'vue';
+import { onMounted, toRef, watch } from 'vue';
 import { PLACE_TYPES_DATA } from "@/models/placeTypes.js";
 import moment from "moment";
+import FavoriteButton from "@/components/shared/FavoriteButton.vue";
+import { useFavoritesStore } from "@/stores/favorites.js";
 
 const emit = defineEmits(['addEvent']);
 const props = defineProps(['teleportTo', 'popupPlace']);
 
 const teleportToRef = toRef(props.teleportTo);
 const place = toRef(props.popupPlace);
-const favoritesFromLocalStorage = ref([]);
+const favoritesStore = useFavoritesStore();
 
 watch(teleportToRef, function () {});
 
 function formatDate(date) {
-    return moment(date).format('LL');
+    return moment(date).format('LLL');
 }
 
 function buyTicket(event) {
     window.open(event.url, '_blank');
 }
 
-function toggleFavorite(event) {
-    const isFavorite = favoritesFromLocalStorage.value.includes(event.id);
-    if (isFavorite.value) {
-        // Remove from favorites
-        const updatedFavorites = favoritesFromLocalStorage.value.filter(id => id !== event.id);
-        favoritesFromLocalStorage.value = updatedFavorites;
-        localStorage.setItem('favoritesEventsIds', JSON.stringify(updatedFavorites));
-    } else {
-        // Add to favorites
-        favoritesFromLocalStorage.value.push(event.id);
-        localStorage.setItem('favoritesEventsIds', JSON.stringify(favoritesFromLocalStorage.value));
-    }
+function toggleFavoritePlace(placeId) {
+    const isFavorite = favoritesStore.isPlaceFavorite(placeId);
+    favoritesStore.togglePlaceFavorite(placeId, isFavorite.value);
+}
+
+function toggleFavoriteEvent(eventId) {
+    const isFavorite = favoritesStore.isEventFavorite(eventId);
+    favoritesStore.toggleEventFavorite(eventId, isFavorite.value);
 }
 
 function addEvent() {
@@ -39,8 +37,7 @@ function addEvent() {
 }
 
 onMounted(() => {
-    favoritesFromLocalStorage.value = JSON.parse(localStorage.getItem('favoritesEventsIds'));
-    
+    favoritesStore.loadAll();
 });
 </script>
 
@@ -49,21 +46,26 @@ onMounted(() => {
         <Transition appear>
             <Card v-if="place" class="area-popup">
                 <template #header>
-                    <Galleria
-                        :value="place.imageUrls"
-                        :numVisible="5"
-                        :showThumbnails="false"
-                        :showIndicators="true"
-                        :changeItemOnIndicatorHover="true"
-                        :showIndicatorsOnItem="true"
-                        indicatorsPosition="bottom">
-                        <template #item="slotProps">
-                            <img
-                                :src="slotProps.item"
-                                :alt="place.name"
-                                style="min-width: 100%; width: 100%; height: 10rem; display: block" />
-                        </template>
-                    </Galleria>
+                    <div class="relative">
+                        <FavoriteButton :is-favorite="favoritesStore.isPlaceFavorite(place.id)" @toggle-favorite="toggleFavoritePlace(place.id)" />
+                        <Galleria
+                            :value="place.imageUrls"
+                            :numVisible="5"
+                            :circular="true"
+                            :showIndicators="true"
+                            :changeItemOnIndicatorHover="true"
+                            :showIndicatorsOnItem="true"
+                            :showItemNavigators="true"
+                            :showThumbnails="false"
+                            indicatorsPosition="bottom">
+                            <template #item="slotProps">
+                                <img
+                                    :src="slotProps.item"
+                                    :alt="place.name"
+                                    style="min-width: 100%; width: 100%; height: 15rem; display: block" />
+                            </template>
+                        </Galleria>
+                    </div>
                     <div class="flex flex-column w-full text-center justify-content-center  py-2">
                         <a :href="place.url" v-if="place" class="font-bold text-lg">{{ place.name }}</a>
                         <div>
@@ -77,7 +79,7 @@ onMounted(() => {
 
                 </template>
                 <template #content>
-                    <Accordion v-if="place.events.length > 0" :activeIndex="0" class="flex flex-column gap-2" >
+                    <Accordion v-if="place.events.length > 0" :activeIndex="0" class="flex flex-column gap-2 pb-4" >
                         <AccordionTab v-for="event in place.events" :key="event.id">
                             <template #header>
                                 <div class="flex flex-column w-full gap-2">
@@ -87,12 +89,7 @@ onMounted(() => {
                             </template>
                             <div>
                                 <div class="relative flex flex-column">
-                                    <Button
-                                        text
-                                        :icon="favoritesFromLocalStorage.includes(event.id) ? 'fas fa-heart' : 'far fa-heart'"
-                                        class="absolute fa-2xl align-self-end mr-3"
-                                        style="z-index: 100; color: white"
-                                        @click="toggleFavorite(event)"></Button>
+                                    <FavoriteButton :is-favorite="favoritesStore.isEventFavorite(event.id)" @toggle-favorite="toggleFavoriteEvent(event.id)"/>
                                     <Galleria
                                         v-if="event"
                                         :value="event.imageUrls"
@@ -106,7 +103,7 @@ onMounted(() => {
                                             <img
                                                 :src="slotProps.item"
                                                 :alt="event.name"
-                                                style="min-width: 100%; width: 100%; height: 7rem; display: block" />
+                                                style="min-width: 100%; width: 100%; height: 10rem; display: block" />
                                         </template>
                                     </Galleria>
                                 </div>
@@ -116,7 +113,7 @@ onMounted(() => {
                             </div>
                         </AccordionTab>
                     </Accordion>
-                    <div v-else class="text-lg font-medium">
+                    <div v-else class="text-lg font-medium pb-2">
                         No upcoming events...
                     </div>
                 </template>

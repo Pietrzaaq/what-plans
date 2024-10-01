@@ -16,8 +16,10 @@ import {
     faInfinity,
     faTableTennisPaddleBall,
     faCoffee,
-    faLocationDot, 
-    faFilter
+    faLocationDot,
+    faFilter, 
+    faCalendarDays,
+    faMapPin
 } from '@fortawesome/free-solid-svg-icons';
 
 library.add(
@@ -37,7 +39,9 @@ library.add(
     faTableTennisPaddleBall,
     faCoffee,
     faLocationDot,
-    faFilter);
+    faFilter,
+    faCalendarDays,
+    faMapPin);
 
 export function initFontAwesome(app) {
     app.component('font-awesome-icon', FontAwesomeIcon);

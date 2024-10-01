@@ -1,16 +1,24 @@
 ﻿<script setup>
-import { computed, onMounted, ref } from 'vue';
+import { computed, onMounted } from 'vue';
 import { useEventsStore } from "@/stores/events.js";
 import { storeToRefs } from "pinia";
 import moment from "moment";
+import { usePlacesStore } from "@/stores/places.js";
+import { useFavoritesStore } from "@/stores/favorites.js";
+import FavoriteButton from "@/components/shared/FavoriteButton.vue";
 
 const eventsStore = useEventsStore();
 const { events } = storeToRefs(eventsStore);
-const favoritesFromLocalStorage = ref([]);
+const placesStore = usePlacesStore();
+const { places } = storeToRefs(placesStore);
+const favoritesStore = useFavoritesStore();
+
 const favoriteEvents = computed(() => {
-    console.log('getFavoriteEvents', favoritesFromLocalStorage.value, events.value);
-    
-    return events.value.filter(event => favoritesFromLocalStorage.value.length > 0 && favoritesFromLocalStorage.value.includes(event.id));
+    return events.value.filter(event => favoritesStore?.favoritesEvents.length > 0 && favoritesStore.favoritesEvents.includes(event.id));
+});
+
+const favoritePlaces = computed(() => {
+    return places.value.filter(place => favoritesStore?.favoritesPlaces.length > 0 && favoritesStore.favoritesPlaces.includes(place.id));
 });
 
 // Function to format the date
@@ -18,51 +26,82 @@ function formatDate(dateString) {
     return moment(dateString).format('LL');
 }
 
-function deleteFavorite(eventId) {
-    const updatedFavorites = favoriteEvents.value.filter(id => id !== eventId);
-    favoriteEvents.value = updatedFavorites;
-    localStorage.setItem('favoritesEventsIds', JSON.stringify(updatedFavorites));
+function toggleFavoritePlace(placeId) {
+    const isFavorite = favoritesStore.isPlaceFavorite(placeId);
+    favoritesStore.togglePlaceFavorite(placeId, isFavorite.value);
+}
+
+function toggleFavoriteEvent(eventId) {
+    const isFavorite = favoritesStore.isEventFavorite(eventId);
+    favoritesStore.toggleEventFavorite(eventId, isFavorite.value);
 }
 
 onMounted(() => {
-    favoritesFromLocalStorage.value = JSON.parse(localStorage.getItem('favoritesEventsIds'));
-    
+    favoritesStore.loadAll();
     eventsStore.loadAll();
 });
 
 </script>
 
 <template>
-    <div class="favorites-view">
-        <h2>Favorite Events</h2>
-        <div v-if="events.length > 0 && favoriteEvents.length > 0" class="card-container w-full">
-            <Card
-                v-for="event in favoriteEvents"
-                :key="event.id"
-                class="event-card"
-                :title="event.name">
-                <template #content>
-                    <div class="relative flex flex-column">
-                        <Button
-                            text
-                            icon="fas fa-heart"
-                            class="absolute fa-2xl align-self-end mr-3"
-                            style="z-index: 100; color: white"
-                            @click="deleteFavorite(event.id)"></Button>
-                        <img :src="event.imageUrls[0]" alt="Event Image" class="event-image" />
+    <Card class="favorites-view">
+        <template #header>
+            <TabView>
+                <TabPanel header="Favorite Events">
+                    <div v-if="events.length > 0 && favoriteEvents.length > 0" class="card-container w-full">
+                        <Card
+                            v-for="event in favoriteEvents"
+                            :key="event.id"
+                            class="event-card"
+                            :title="event.name">
+                            <template #content>
+                                <div class="relative flex flex-column">
+                                    <FavoriteButton :is-favorite="favoritesStore.isEventFavorite(event.id)" @toggle-favorite="toggleFavoriteEvent(event.id)"/>
+                                    <img :src="event.imageUrls[0]" alt="Event Image" class="event-image" />
+                                </div>
+                                <div class="event-content">
+                                    <h4>{{ event.name }}</h4>
+                                    <p><strong>Start Date:</strong> {{ formatDate(event.startDate) }}</p>
+                                    <a :href="event.url" target="_blank" class="event-link">View Event</a>
+                                </div>
+                            </template>
+                        </Card>
                     </div>
-                    <div class="event-content">
-                        <h4>{{ event.name }}</h4>
-                        <p><strong>Start Date:</strong> {{ formatDate(event.startDate) }}</p>
-                        <a :href="event.url" target="_blank" class="event-link">View Event</a>
+                    <div v-else class="text-center font-medium text-xl pt-4">
+                        No favorites found 💔
                     </div>
-                </template>
-            </Card>
-        </div>
-        <div class="text-center font-medium text-xl pt-4">
-            No favorites found 💔
-        </div>
-    </div>
+                </TabPanel>
+                <TabPanel header="Favorite Places">
+                    <div v-if="favoritePlaces.length > 0" class="card-container w-full">
+                        <Card v-for="place in favoritePlaces" :key="place.id" class="p-col-12 p-md-6 p-lg-4">
+                            <template #header>
+                                <div class="relative">
+                                    <FavoriteButton :is-favorite="favoritesStore.isPlaceFavorite(place.id)" @toggle-favorite="toggleFavoritePlace(place.id)"/>
+                                    <img :src="place.imageUrls[0]" alt="Place Image" class="place-image" />
+                                </div>
+                            </template>
+                            <template #title>
+                                <a :href="place.url" target="_blank" class="place-name">{{ place.name }}</a>
+                            </template>
+                            <template #subtitle>
+                                <p>{{ place.location.formatedAddress }}</p>
+                            </template>
+                            <template #content>
+                                <p>{{ place.description || 'No description available' }}</p>
+                            </template>
+                            <template #footer>
+                                <p><strong>Mail: </strong><a :href="'mailto:' + place.mail">{{ place.mail }}</a></p>
+                                <p><strong>City: </strong>{{ place.location.cityName }}</p>
+                            </template>
+                        </Card>
+                    </div>
+                    <div v-else class="text-center font-medium text-xl pt-4">
+                        No favorites found 💔
+                    </div>
+                </TabPanel>
+            </TabView>
+        </template>
+    </Card>
 </template>
 
 <style scoped>
