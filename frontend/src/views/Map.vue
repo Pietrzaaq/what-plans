@@ -1,21 +1,37 @@
 ﻿<script setup>
-import { onBeforeMount, onMounted, ref } from 'vue';
+import { onBeforeMount, onMounted, ref, watch } from 'vue';
 import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
-import AreaPopup from '@/components/map/popups/AreaPopup.vue';
 import { usePopup } from "../composables/map/popup";
 import { usePlacesStore } from "../stores/places.js";
 import EventDialog from "../components/map/EventDialog.vue";
 import 'leaflet.awesome-markers/dist/leaflet.awesome-markers.css'; 
-import 'leaflet.awesome-markers/dist/leaflet.awesome-markers.js'; 
+import 'leaflet.awesome-markers/dist/leaflet.awesome-markers.js';
+import Filter from "../components/map/Filter.vue";
+import { useGlobalStore } from "@/stores/global.js";
+import { storeToRefs } from "pinia";
+import { EVENT_TYPES_DATA } from "@/models/eventTypes.js";
+import EventPopup from "@/components/map/popups/EventPopup.vue";
+import PlacePopup from "@/components/map/popups/PlacePopup.vue";
+import { PLACE_TYPES_DATA } from "@/models/placeTypes.js";
 
-// Areas
+// Global 
+const globalStore = useGlobalStore();
+const { center } = storeToRefs(globalStore);
+
+watch(center, (newVal) => {
+    console.log('Center is changed');
+    if (newVal) {
+        map.value.setView(newVal, zoom.value);
+    }
+});
+
+// Services
 const placesStore = usePlacesStore();
 
 // Map
 const map = ref(null);
-let center = ref([51.769406790090855, 19.43750792680422]);
-const zoom = ref(14);
+const zoom = ref(13);
 const bounds = ref(null);
 const url = ref(`https://api.maptiler.com/maps/basic-v2/{z}/{x}/{y}.png?key=${import.meta.env.VITE_MAP_TILER_API_KEY}`);
 
@@ -24,7 +40,8 @@ const isDialogVisible = ref(false);
 const dialogArea = ref(null);
 
 //Popup
-const { teleportTo, isPopupVisible, popupArea, showPopup, hidePopup, onPopupEnter, onPopupLeave } = usePopup();
+const MAX_POPUP_HEIGHT = 490;
+const { teleportTo, isPlacePopupVisible, isEventPopupVisible, popupTargetObject, showPlacePopup, showEventPopup, hidePopup } = usePopup();
 
 function onMapClick(e) {
     console.log('onMapClick', e);
@@ -46,31 +63,11 @@ function onDialogClosed() {
     dialogArea.value = null;
     isDialogVisible.value = false;
     
-    loadAreas();
+    loadPlaces();
 }
 
 function onMarkerClicked(event) {
     console.log('On marker clicked', event);
-}
-
-async function loadAreas() {
-    await placesStore.loadAll();
-
-    placesStore.areas.forEach((area) => {
-        const polygon = L.geoJSON(area.Polygon).addTo(map.value);
-
-        polygon.on('click', onPolygonClick);
-        polygon.on('mouseover', showPopup);
-        polygon.on('mouseout', hidePopup);
-        polygon.bindPopup(`<div class="area-popup" data-area-id="${area.Id}"></div>`, {
-            areaId: area.Id,
-            autoClose: false,
-            autoPan: false,
-            closeButton: false,
-            keepInView: true,
-            className: 'hidden'
-        });
-    });
 }
 
 function boundsUpdated(newBoundsValue) {
@@ -83,26 +80,6 @@ function openEventDialog(area) {
     dialogArea.value = area;
     isDialogVisible.value = true;
     console.log(area, isDialogVisible.value);
-}
-
-function initializeMap() {
-    map.value = L.map('map', {
-        center: L.latLng(center.value[0], center.value[1]),
-        zoom: zoom.value
-    });
-
-    map.value.on('load', onMapLoad);
-    map.value.on('zoomend', onZoomEnd);
-    map.value.on('moveend', onMoveEnd);
-    map.value.on('click', onMapClick);
-    map.value.on('unload', onMapUnload);
-
-    L.tileLayer(url.value, {
-        minZoom: 4,
-        maxZoom: 19,
-        closePopupOnClick: false,
-        attribution: '&copy; <a href="http://www.openstreetmap.org/copyright">OpenStreetMap</a>'
-    }).addTo(map.value);
 }
 
 function onMapLoad() {
@@ -133,8 +110,86 @@ function onMoveEnd() {
     }
 }
 
+function initializeMap() {
+    console.log('initializeMap', center);
+
+    map.value = L.map('map', {
+        center: L.latLng(center.value[0], center.value[1]),
+        zoom: zoom.value
+    });
+
+    map.value.on('load', onMapLoad);
+    map.value.on('zoomend', onZoomEnd);
+    map.value.on('moveend', onMoveEnd);
+    map.value.on('click', onMapClick);
+    map.value.on('unload', onMapUnload);
+
+    L.tileLayer(url.value, {
+        minZoom: 4,
+        maxZoom: 19,
+        closePopupOnClick: false,
+        attribution: '<span>Projekt wykonany w ramach pracy magisterkiej na Uniwersytecie Łódzkim</span> &copy; <a href="http://www.openstreetmap.org/copyright">OpenStreetMap</a>'
+    }).addTo(map.value);
+}
+
+async function loadPlaces() {
+    await placesStore.loadAll(true);
+
+    placesStore.places.forEach(place => {
+        console.log('Area', place);
+        const latLng = [place.location.latitude, place.location.longitude];
+    
+        let marker;
+        
+        if (place.events.length === 1) {
+            console.log('event popup');
+            const event = place.events[0];
+            console.log(event);
+            const typeData = EVENT_TYPES_DATA[event.eventType];
+            const icon = L.AwesomeMarkers.icon({
+                icon: typeData.icon,
+                markerColor: typeData.markerColor,
+                prefix: 'fa',
+            });
+            marker = L.marker(latLng, { icon: icon });
+            marker.bindPopup(`<div class="event-popup" data-place-id="${place.id}" data-event-id="${event.id}"></div>`, {
+                placeId: place.id,
+                eventId: event.id,
+                autoClose: false,
+                autoPan: false,
+                closeButton: false,
+                keepInView: true,
+            });
+            marker.on('click', showEventPopup);
+        } 
+        else {
+            const typeData = PLACE_TYPES_DATA[place.placeType];
+            const icon = L.AwesomeMarkers.icon({
+                icon: typeData.icon,
+                markerColor: typeData.markerColor,
+                prefix: 'fa',
+            });
+            marker = L.marker(latLng, { icon: icon });
+            marker.bindPopup(`<div class="place-popup" data-place-id="${place.id}"></div>`, {
+                placeId: place.id,
+                autoClose: false,
+                autoPan: false,
+                closeButton: false,
+                keepInView: true,
+            });
+            marker.on('click', showPlacePopup);
+            
+        }
+
+
+        marker.getPopup().on('remove', hidePopup);
+
+        marker.addTo(map.value);
+    });
+}
+
 onBeforeMount(async () => {
-    await loadAreas();
+    await loadPlaces();
 
     navigator.geolocation.getCurrentPosition((position) => {
         center.value = [position.latitude, position.longitude];
@@ -143,6 +198,13 @@ onBeforeMount(async () => {
 
 onMounted(() => {
     initializeMap();
+
+    // const icon = L.AwesomeMarkers.icon({
+    //     icon: 'masks-theater', // icon name from Font Awesome
+    //     markerColor: 'purple', // marker color
+    //     prefix: 'fa', // icon library prefix (Font Awesome)
+    // });
+    // L.marker([51.773257421728154,19.46971977843251], { icon: icon }).addTo(map.value).bindPopup('Eloo');
 });
 </script>
 
@@ -150,18 +212,28 @@ onMounted(() => {
     <main style="width: 100vw; height: 100vh">
         <div id="map" style="height: 100%" @load="onMapLoad"></div>
     </main>
-    <AreaPopup
-        v-if="isPopupVisible" 
+    <Filter class="absolute" style="z-index: 1000"></Filter>
+    <PlacePopup
+        v-if="isPlacePopupVisible" 
         :teleportTo="teleportTo" 
-        :popup-area="popupArea" 
-        @addEvent="openEventDialog"
-        @popupEnter="onPopupEnter" 
-        @popupLeave="onPopupLeave"></AreaPopup>
+        :popup-place="popupTargetObject" 
+        @addEvent="openEventDialog"></PlacePopup>
+    <EventPopup
+        v-if="isEventPopupVisible"
+        :teleportTo="teleportTo"
+        :popup-event="popupTargetObject"
+        @addEvent="openEventDialog"></EventPopup>
     <EventDialog
         :visible="isDialogVisible"
         :area="dialogArea"
         @close-dialog="onDialogClosed"></EventDialog>
 </template>
+
+<style>
+.leaflet-container a {
+    color: var(--primary-color) !important;
+}
+</style>
 
 <style scoped>
 :deep(.leaflet-control-zoom) {

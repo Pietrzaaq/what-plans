@@ -14,6 +14,11 @@ const router = createRouter({
                     component: () => import('@/views/Map.vue')
                 },
                 {
+                    path: '/favorites',
+                    name: 'favorites',
+                    component: () => import('@/views/Favorites.vue')
+                },
+                {
                     path: '/pages/timeline',
                     name: 'timeline',
                     component: () => import('@/views/pages/Timeline.vue')
