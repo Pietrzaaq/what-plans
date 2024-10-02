@@ -20,7 +20,6 @@ const globalStore = useGlobalStore();
 const { center } = storeToRefs(globalStore);
 
 watch(center, (newVal) => {
-    console.log('Center is changed');
     if (newVal) {
         map.value.setView(newVal, zoom.value);
     }
@@ -40,7 +39,6 @@ const isDialogVisible = ref(false);
 const dialogArea = ref(null);
 
 //Popup
-const MAX_POPUP_HEIGHT = 490;
 const { teleportTo, isPlacePopupVisible, isEventPopupVisible, popupTargetObject, showPlacePopup, showEventPopup, hidePopup } = usePopup();
 
 function onMapClick(e) {
@@ -48,26 +46,11 @@ function onMapClick(e) {
 }
 
 // Polygon
-function onPolygonClick(event) {
-    console.log('onPolygonClick');
-}
-function onPopupMouseEnter() {
-    console.log('onPopupMouseEnter');
-}
-
-function onPopupMouseLeave() {
-    console.log('onPopupMouseLeave');
-}
-
 function onDialogClosed() {
     dialogArea.value = null;
     isDialogVisible.value = false;
     
-    loadPlaces();
-}
-
-function onMarkerClicked(event) {
-    console.log('On marker clicked', event);
+    loadMarkers();
 }
 
 function boundsUpdated(newBoundsValue) {
@@ -79,7 +62,6 @@ function boundsUpdated(newBoundsValue) {
 function openEventDialog(area) {
     dialogArea.value = area;
     isDialogVisible.value = true;
-    console.log(area, isDialogVisible.value);
 }
 
 function onMapLoad() {
@@ -110,15 +92,14 @@ function onMoveEnd() {
     }
 }
 
-function initializeMap() {
-    console.log('initializeMap', center);
-
+async function initializeMap() {
     map.value = L.map('map', {
         center: L.latLng(center.value[0], center.value[1]),
         zoom: zoom.value
     });
 
     map.value.on('load', onMapLoad);
+    map.value.on('zoom', scaleIcon);
     map.value.on('zoomend', onZoomEnd);
     map.value.on('moveend', onMoveEnd);
     map.value.on('click', onMapClick);
@@ -130,67 +111,110 @@ function initializeMap() {
         closePopupOnClick: false,
         attribution: '<span>Projekt wykonany w ramach pracy magisterkiej na Uniwersytecie Łódzkim</span> &copy; <a href="http://www.openstreetmap.org/copyright">OpenStreetMap</a>'
     }).addTo(map.value);
+
+    await placesStore.loadAll(true);
+    await loadMarkers();
+
+    setTimeout(() => scaleIcon(), 100);
 }
 
-async function loadPlaces() {
-    await placesStore.loadAll(true);
-
+async function loadMarkers() {
     placesStore.places.forEach(place => {
         console.log('Area', place);
-        const latLng = [place.location.latitude, place.location.longitude];
-    
         let marker;
         
-        if (place.events.length === 1) {
-            console.log('event popup');
-            const event = place.events[0];
-            console.log(event);
-            const typeData = EVENT_TYPES_DATA[event.eventType];
-            const icon = L.AwesomeMarkers.icon({
-                icon: typeData.icon,
-                markerColor: typeData.markerColor,
-                prefix: 'fa',
-            });
-            marker = L.marker(latLng, { icon: icon });
-            marker.bindPopup(`<div class="event-popup" data-place-id="${place.id}" data-event-id="${event.id}"></div>`, {
-                placeId: place.id,
-                eventId: event.id,
-                autoClose: false,
-                autoPan: false,
-                closeButton: false,
-                keepInView: true,
-            });
-            marker.on('click', showEventPopup);
-        } 
-        else {
-            const typeData = PLACE_TYPES_DATA[place.placeType];
-            const icon = L.AwesomeMarkers.icon({
-                icon: typeData.icon,
-                markerColor: typeData.markerColor,
-                prefix: 'fa',
-            });
-            marker = L.marker(latLng, { icon: icon });
-            marker.bindPopup(`<div class="place-popup" data-place-id="${place.id}"></div>`, {
-                placeId: place.id,
-                autoClose: false,
-                autoPan: false,
-                closeButton: false,
-                keepInView: true,
-            });
-            marker.on('click', showPlacePopup);
-            
-        }
-
+        if (place.events.length === 1) 
+            marker = getEventMarker(place);
+        else 
+            marker = getPlaceMarker(place);
 
         marker.getPopup().on('remove', hidePopup);
-
         marker.addTo(map.value);
     });
 }
 
-onBeforeMount(async () => {
-    await loadPlaces();
+function getPlaceMarker(place) {
+    const latLng = [place.location.latitude, place.location.longitude];
 
+    const typeData = PLACE_TYPES_DATA[place.placeType];
+    const html = `
+            <div class="place-marker-content" style="background-color: ${typeData.markerColor}">
+                <i class="fa fa-${typeData.icon}"></i>
+            </div>
+            <div class="place-marker-label">${place.name}</div>`;
+
+    const overlay = L.divIcon({
+        className: 'place-marker',
+        html: html,
+        iconSize: [50, 50], 
+        iconAnchor: [25, 25] 
+    });
+
+    const marker = L.marker(latLng, { icon: overlay });
+    
+    marker.bindPopup(`<div class="place-popup" data-place-id="${place.id}"></div>`, {
+        placeId: place.id,
+        autoClose: false,
+        autoPan: false,
+        closeButton: false,
+        keepInView: true,
+    });
+    marker.addTo(map.value);
+    marker.on('click', showPlacePopup);
+    
+    
+    return marker;
+}
+
+function getEventMarker(place) {
+    let marker;
+    const latLng = [place.location.latitude, place.location.longitude];
+    
+    console.log('event popup');
+    const event = place.events[0];
+    console.log(event);
+    const typeData = EVENT_TYPES_DATA[event.eventType];
+    const icon = L.AwesomeMarkers.icon({
+        icon: typeData.icon,
+        markerColor: typeData.markerColor,
+        prefix: 'fa',
+    });
+    marker = L.marker(latLng, { icon: icon });
+    marker.bindPopup(`<div class="event-popup" data-place-id="${place.id}" data-event-id="${event.id}"></div>`, {
+        placeId: place.id,
+        eventId: event.id,
+        autoClose: false,
+        autoPan: false,
+        closeButton: false,
+        keepInView: true,
+    });
+    marker.on('click', showEventPopup);
+    
+    return marker;
+}
+
+function scaleIcon() {
+    const zoom = map.value.getZoom(); 
+    const scale = Math.pow(0.9, 18 - zoom); 
+
+    document.querySelectorAll('.place-marker').forEach(function(marker) {
+        const content = marker.querySelector('.place-marker-content');
+        const label = marker.querySelector('.place-marker-label');
+        const newSize = 50 * scale; 
+        const newFontSize = 25 * scale; 
+        const newLineHeight = 25 * scale;
+
+        content.style.width = newSize + 'px';
+        content.style.height = newSize + 'px';
+        content.style.fontSize = newFontSize + 'px';
+        console.log(label.style, scale);
+        label.style.fontSize = newFontSize + 'px';
+        label.style.lineHeight = newLineHeight + 'px';
+    });
+}
+
+
+onBeforeMount(async () => {
     navigator.geolocation.getCurrentPosition((position) => {
         center.value = [position.latitude, position.longitude];
     });
@@ -198,13 +222,6 @@ onBeforeMount(async () => {
 
 onMounted(() => {
     initializeMap();
-
-    // const icon = L.AwesomeMarkers.icon({
-    //     icon: 'masks-theater', // icon name from Font Awesome
-    //     markerColor: 'purple', // marker color
-    //     prefix: 'fa', // icon library prefix (Font Awesome)
-    // });
-    // L.marker([51.773257421728154,19.46971977843251], { icon: icon }).addTo(map.value).bindPopup('Eloo');
 });
 </script>
 

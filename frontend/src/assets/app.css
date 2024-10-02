@@ -64,3 +64,44 @@
 .p-galleria-indicator.p-highlight button {
     background-color: var(--gray-300) !important;
 }
+
+.place-marker {
+    position: relative;
+    display: flex;
+}
+
+.place-marker-content {
+    position: absolute;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    top: 50%;
+    left: 50%;
+    width: 100%;
+    height: 100%;
+    transform: translate(-50%, -50%);
+    border-radius: 50%;
+    opacity: 0.9;
+    border: 3px solid var(--gray-500);
+    font-size: 25px;
+    color: white;
+    transition: width 100ms, height 100ms, font-size 50ms;
+}
+
+.place-marker-content:hover { 
+    opacity: 1;
+}
+
+.place-marker-label {
+    display: flex;
+    font-size: 15px;
+    height: 100%;
+    align-items: center;
+    text-align: left;
+    margin-left: 3em;
+    width: 10rem;
+    font-weight: bold;
+    line-height: 20px;
+    transition: font-size 100ms;
+}
+
