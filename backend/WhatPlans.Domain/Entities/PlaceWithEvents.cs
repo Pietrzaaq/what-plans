@@ -1,6 +1,5 @@
 ﻿using MongoDB.Bson;
 using MongoDB.Bson.Serialization.Attributes;
-using WhatPlans.Domain.Common;
 using WhatPlans.Domain.Enums;
 
 namespace WhatPlans.Domain.Entities;

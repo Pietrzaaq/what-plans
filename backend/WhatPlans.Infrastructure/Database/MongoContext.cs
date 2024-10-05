@@ -16,4 +16,5 @@ public class MongoContext : IMongoContext
 
     public IMongoCollection<Place> Places => Database.GetCollection<Place>("Places");
     public IMongoCollection<Event> Events => Database.GetCollection<Event>("Events");
+    public IMongoCollection<Location> Locations => Database.GetCollection<Location>("Locations");
 }

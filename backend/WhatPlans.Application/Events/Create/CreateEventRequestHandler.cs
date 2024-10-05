@@ -20,7 +20,7 @@ public class CreateEventRequestHandler : IRequestHandler<CreateEventRequest, Eve
         {
             Id = ObjectId.GenerateNewId(),
             PlaceId = request.Body.PlaceId,
-            Location = request.Body.Location,
+            LocationId = request.Body.LocationId,
             CreatorId = request.Body.CreatorId,
             EventType = request.Body.Type,
             Name = request.Body.Name,

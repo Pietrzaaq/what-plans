@@ -16,8 +16,6 @@ public class GetPlacesWithEventsRequestHandler : IRequestHandler<GetPlacesWithEv
     
     public async Task<List<PlaceWithEvents>> Handle(GetPlacesWithEventsRequest request, CancellationToken cancellationToken)
     {
-        var queryableCollection = _mongoContext.Places.AsQueryable();
-        
         var result = await _mongoContext.Places.Aggregate()
             .Lookup<Place, Event, PlaceWithEvents>(
                 _mongoContext.Events,            
