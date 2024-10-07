@@ -1,5 +1,4 @@
 ﻿using MediatR;
-using MongoDB.Bson;
 using MongoDB.Driver;
 using WhatPlans.Application.Interfaces;
 
@@ -18,7 +17,7 @@ public class DeleteEventRequestHandler : IRequestHandler<DeleteEventRequest>
     
     public async Task Handle(DeleteEventRequest request, CancellationToken cancellationToken)
     {
-        var filter = Builders<Event>.Filter.Eq(p => p.Id, new ObjectId(request.Id));
+        var filter = Builders<Event>.Filter.Eq(p => p.Id, request.Id);
         
         await _mongoContext.Events.DeleteOneAsync(filter, cancellationToken);
     }

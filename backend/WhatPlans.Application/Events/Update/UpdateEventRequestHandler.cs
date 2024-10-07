@@ -19,7 +19,7 @@ public class UpdateEventRequestHandler : IRequestHandler<UpdateEventRequest, Eve
     {
         var updatedEvent = new Event()
         {
-            Id = new ObjectId(request.Id),
+            Id = request.Id,
             Name = request.Body.Name
         };
         

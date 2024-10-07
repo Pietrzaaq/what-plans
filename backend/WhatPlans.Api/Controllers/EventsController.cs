@@ -4,6 +4,7 @@ using WhatPlans.Application.Events.Create;
 using WhatPlans.Application.Events.Delete;
 using WhatPlans.Application.Events.Get.All;
 using WhatPlans.Application.Events.Get.ById;
+using WhatPlans.Application.Events.Get.ByPlaceId;
 using WhatPlans.Application.Events.Update;
 
 namespace WhatPlans.Api.Controllers;
@@ -16,6 +17,10 @@ public class EventsController : BaseController
     
     [HttpGet]
     public Task<IActionResult> GetEvents(GetEventsRequest request)
+        => ExecuteAsync(request);
+    
+    [HttpGet("/places/{placeId}")]
+    public Task<IActionResult> GetEventsByPlaceId(GetEventsByPlaceIdRequest request)
         => ExecuteAsync(request);
     
     [HttpGet("{id}")]

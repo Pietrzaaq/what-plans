@@ -1,10 +1,11 @@
 ﻿using MediatR;
 using Microsoft.AspNetCore.Mvc;
+using MongoDB.Bson;
 
 namespace WhatPlans.Application.Events.Delete;
 
 public class DeleteEventRequest : IRequest
 {
     [FromRoute]
-    public string Id { get; set; }
+    public ObjectId Id { get; set; }
 }
