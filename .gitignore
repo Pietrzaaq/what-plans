@@ -35,6 +35,7 @@ Desktop.ini
 
 /backend/**/*.Development.json
 /backend/WhatPlans.Job/Data
+*.geojson
 
 # Frontend section
 
