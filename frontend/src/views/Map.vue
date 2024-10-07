@@ -14,10 +14,18 @@ import { EVENT_TYPES_DATA } from "@/models/eventTypes.js";
 import EventPopup from "@/components/map/popups/EventPopup.vue";
 import PlacePopup from "@/components/map/popups/PlacePopup.vue";
 import { PLACE_TYPES_DATA } from "@/models/placeTypes.js";
+import { useFilterStore } from "@/stores/filter.js";
+import { MAP_TYPES } from "@/models/mapTypes.js";
+import { useEventsStore } from "@/stores/events.js";
+import { groupBy } from "@/helpers/helpers.js";
 
-// Global 
+// Stores
 const globalStore = useGlobalStore();
 const { center } = storeToRefs(globalStore);
+const filterStore = useFilterStore();
+const { mapType, eventTypes } = storeToRefs(filterStore);
+const placesStore = usePlacesStore();
+const eventsStore = useEventsStore();
 
 watch(center, (newVal) => {
     if (newVal) {
@@ -25,14 +33,20 @@ watch(center, (newVal) => {
     }
 });
 
-// Services
-const placesStore = usePlacesStore();
+watch(mapType, async() => {
+    await loadData();
+});
+
+watch(eventTypes, async() => {
+    await loadMarkers();
+});
 
 // Map
 const map = ref(null);
 const zoom = ref(13);
 const bounds = ref(null);
 const url = ref(`https://api.maptiler.com/maps/basic-v2/{z}/{x}/{y}.png?key=${import.meta.env.VITE_MAP_TILER_API_KEY}`);
+const markerLayer = ref(null);
 
 // Dialog
 const isDialogVisible = ref(false);
@@ -111,26 +125,62 @@ async function initializeMap() {
         closePopupOnClick: false,
         attribution: '<span>Projekt wykonany w ramach pracy magisterkiej na Uniwersytecie Łódzkim</span> &copy; <a href="http://www.openstreetmap.org/copyright">OpenStreetMap</a>'
     }).addTo(map.value);
+    
+    await loadData();
+}
 
-    await placesStore.loadAll(true);
+async function loadData() {
+    if (mapType.value === MAP_TYPES.EVENT) {
+        await eventsStore.loadAll();
+    } else {
+        await placesStore.loadAll();
+    }
+
     await loadMarkers();
-
-    setTimeout(() => scaleIcon(), 100);
 }
 
 async function loadMarkers() {
-    placesStore.places.forEach(place => {
-        console.log('Area', place);
-        let marker;
-        
-        if (place.events.length === 1) 
-            marker = getEventMarker(place);
-        else 
+    if (markerLayer.value) {
+        map.value.removeLayer(markerLayer.value);
+        markerLayer.value = null;
+    }
+    markerLayer.value = L.layerGroup().addTo(map.value);
+    
+    if (mapType.value === MAP_TYPES.EVENT) {
+        const locationMap = groupBy(eventsStore.events, e => e.location.id);
+
+        if (locationMap.size === 1) {
+            let marker;
+
+            marker = getEventMarker(locationMap[0]);
+
+            marker.getPopup().on('remove', hidePopup);
+            marker.addTo(markerLayer.value);
+        }
+
+        locationMap.forEach(events => {
+            let marker;
+
+            marker = getEventMarker(events);
+
+            marker.getPopup().on('remove', hidePopup);
+            marker.addTo(markerLayer.value);
+        });
+    } else {
+        placesStore.places.forEach(place => {
+            let marker;
+            
+            if (!eventTypes.value.includes(place.placeType.toString()))
+                return;
+                
             marker = getPlaceMarker(place);
 
-        marker.getPopup().on('remove', hidePopup);
-        marker.addTo(map.value);
-    });
+            marker.getPopup().on('remove', hidePopup);
+            marker.addTo(markerLayer.value);
+        });
+    }
+
+    scaleIcon();
 }
 
 function getPlaceMarker(place) {
@@ -151,43 +201,43 @@ function getPlaceMarker(place) {
     });
 
     const marker = L.marker(latLng, { icon: overlay });
-    
-    marker.bindPopup(`<div class="place-popup" data-place-id="${place.id}"></div>`, {
+
+    marker.bindPopup(`<div class="place-popup"></div>`, {
         placeId: place.id,
-        autoClose: false,
+        autoClose: true,
         autoPan: false,
         closeButton: false,
         keepInView: true,
     });
     marker.addTo(map.value);
     marker.on('click', showPlacePopup);
-    
-    
+
+
     return marker;
 }
 
-function getEventMarker(place) {
+function getEventMarker(events) {
     let marker;
-    const latLng = [place.location.latitude, place.location.longitude];
+    const event = events[0];
+    const latLng = [event.location.latitude, event.location.longitude];
+    const eventIds = events.map(e => e.id);
     
-    console.log('event popup');
-    const event = place.events[0];
-    console.log(event);
+    const markerOptions = {
+        eventIds: eventIds,
+        autoClose: true,
+        autoPan: false,
+        closeButton: false,
+        keepInView: true,
+    };
+    
     const typeData = EVENT_TYPES_DATA[event.eventType];
     const icon = L.AwesomeMarkers.icon({
         icon: typeData.icon,
         markerColor: typeData.markerColor,
-        prefix: 'fa',
+        prefix: 'fa'
     });
     marker = L.marker(latLng, { icon: icon });
-    marker.bindPopup(`<div class="event-popup" data-place-id="${place.id}" data-event-id="${event.id}"></div>`, {
-        placeId: place.id,
-        eventId: event.id,
-        autoClose: false,
-        autoPan: false,
-        closeButton: false,
-        keepInView: true,
-    });
+    marker.bindPopup(`<div class="event-popup"></div>`, markerOptions);
     marker.on('click', showEventPopup);
     
     return marker;
@@ -207,9 +257,14 @@ function scaleIcon() {
         content.style.width = newSize + 'px';
         content.style.height = newSize + 'px';
         content.style.fontSize = newFontSize + 'px';
-        console.log(label.style, scale);
-        label.style.fontSize = newFontSize + 'px';
-        label.style.lineHeight = newLineHeight + 'px';
+        
+        if (zoom < 11)
+            label.style.display = 'none';
+        else {
+            label.style.display = 'flex';
+            label.style.fontSize = newFontSize + 'px';
+            label.style.lineHeight = newLineHeight + 'px';
+        }
     });
 }
 
@@ -222,6 +277,8 @@ onBeforeMount(async () => {
 
 onMounted(() => {
     initializeMap();
+
+    setTimeout(() => scaleIcon(), 100);
 });
 </script>
 
@@ -229,7 +286,7 @@ onMounted(() => {
     <main style="width: 100vw; height: 100vh">
         <div id="map" style="height: 100%" @load="onMapLoad"></div>
     </main>
-    <Filter class="absolute" style="z-index: 1000"></Filter>
+    <Filter class="absolute"></Filter>
     <PlacePopup
         v-if="isPlacePopupVisible" 
         :teleportTo="teleportTo" 
@@ -248,7 +305,7 @@ onMounted(() => {
 
 <style>
 .leaflet-container a {
-    color: var(--primary-color) !important;
+    color: black !important;
 }
 </style>
 

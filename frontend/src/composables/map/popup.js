@@ -1,7 +1,6 @@
-﻿import { nextTick, ref } from "vue";
+﻿import { ref } from "vue";
 import { usePlacesStore } from "@/stores/places.js";
 import { useEventsStore } from "@/stores/events.js";
-
 
 
 export function usePopup() {
@@ -12,43 +11,39 @@ export function usePopup() {
     const popup = ref(null);
 
     const placesStore = usePlacesStore();
+    const eventStore = useEventsStore();
 
     function showPlacePopup(event) {
         popup.value = event.target?._popup;
 
+        if (isPlacePopupVisible.value) {
+            isPlacePopupVisible.value = false;
+            teleportTo.value = null;
+        }
+
         const placeId = popup.value.options.placeId;
         popupTargetObject.value = placesStore.places.find(a => a.id === placeId);
 
-        const markerPopup = document.querySelector(`.place-popup`);
-
-        console.log('markerPopup', markerPopup, popup.value, popupTargetObject.value);
-        
-        teleportTo.value = markerPopup;
+        teleportTo.value = document.querySelector(`.place-popup`);
         isPlacePopupVisible.value = true;
     }
 
     function showEventPopup(event) {
         popup.value = event.target?._popup;
+        const eventIds = popup.value.options.eventIds;
 
-        const placeId = popup.value.options.placeId;
-        const eventId = popup.value.options.eventId;
-        const place = placesStore.places.find(p => p.id === placeId);
-        popupTargetObject.value = place.events.find(a => a.id === eventId);
+        console.log(eventIds);
+        const events = eventStore.events.filter(e => eventIds.includes(e.id));
+        popupTargetObject.value = events;
 
-        console.log(place, eventId);
-        const markerPopup = document.querySelector(`.event-popup`);
-
-        console.log('markerPopup', markerPopup, popup.value, popupTargetObject.value);
-
-        teleportTo.value = markerPopup;
+        teleportTo.value = document.querySelector(`.event-popup`);
         isEventPopupVisible.value = true;
     }
 
     function hidePopup() {
-        console.log('hidePopup');
+        teleportTo.value = null;
         isEventPopupVisible.value = false;
         isPlacePopupVisible.value = false;
-        teleportTo.value = null;
         popupTargetObject.value = null;
     }
     

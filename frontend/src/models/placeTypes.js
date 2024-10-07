@@ -18,12 +18,12 @@ export const PLACE_TYPES_DATA = {
     [PLACE_TYPES.SPORTS_CENTRE]: {
         name: 'Sports Centre',
         icon: 'futbol',  // FontAwesome icon for sports centre
-        markerColor: 'green',
+        markerColor: 'blue',
     },
     [PLACE_TYPES.SCENE]: {
         name: 'Scene',
-        icon: 'stage',  // Custom or similar icon for a scene
-        markerColor: 'blue',
+        icon: 'music',  // Custom or similar icon for a scene
+        markerColor: 'green',
     },
     [PLACE_TYPES.RESTAURANT]: {
         name: 'Restaurant',

@@ -5,8 +5,8 @@ export default new class PlacesService {
         return await axios.get('https://localhost:5000/api/places');
     }
 
-    async getAllWithEvents(includeEvents = false) {
-        return await axios.get('https://localhost:5000/api/places/events', { params: { includeEvents } });
+    async getPlaceWithEvents(placeId) {
+        return await axios.get(`https://localhost:5000/api/${placeId}/events`);
     }
 
     async create(place) {

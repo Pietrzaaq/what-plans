@@ -90,6 +90,7 @@
 
 .place-marker-content:hover { 
     opacity: 1;
+    border: 3px solid var(--gray-800);
 }
 
 .place-marker-label {
@@ -105,3 +106,21 @@
     transition: font-size 100ms;
 }
 
+.layout-static-inactive .layout-map-container .map-filter {
+    left: 50px !important;
+}
+
+.map-filter {
+    z-index: 400;
+    width: 400px; 
+    top: 100px;
+    left: 350px;
+    border-radius: 10px
+}
+
+@media (max-width: 990px) {
+    .map-filter {
+        left: 50px;
+        max-width: 15rem;
+    }
+}

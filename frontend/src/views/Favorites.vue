@@ -21,7 +21,6 @@ const favoritePlaces = computed(() => {
     return places.value.filter(place => favoritesStore?.favoritesPlaces.length > 0 && favoritesStore.favoritesPlaces.includes(place.id));
 });
 
-// Function to format the date
 function formatDate(dateString) {
     return moment(dateString).format('LL');
 }

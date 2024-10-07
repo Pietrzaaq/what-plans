@@ -7,11 +7,15 @@ import AppSidebar from './AppSidebar.vue';
 import AppConfig from './AppConfig.vue';
 import { useLayout } from '@/layout/composables/layout';
 import { useGlobalStore } from "../stores/global.js";
+import { useFavoritesStore } from "@/stores/favorites.js";
+import { useFilterStore } from "@/stores/filter.js";
 
 const { layoutConfig, layoutState, isSidebarActive } = useLayout();
 
 const outsideClickListener = ref(null);
 const globalStore = useGlobalStore();
+const favoritesStore = useFavoritesStore();
+const filterStore = useFilterStore();
 
 watch(isSidebarActive, (newVal) => {
     if (newVal) {
@@ -68,6 +72,8 @@ const isMapRoute = computed(() => {
 
 onBeforeMount(() => {
     globalStore.initialize();
+    filterStore.loadFilter();
+    favoritesStore.loadAll();
 });
 </script>
 
