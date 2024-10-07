@@ -2,7 +2,8 @@
 using Microsoft.AspNetCore.Mvc;
 using WhatPlans.Application.Events.Create;
 using WhatPlans.Application.Events.Delete;
-using WhatPlans.Application.Events.Get;
+using WhatPlans.Application.Events.Get.All;
+using WhatPlans.Application.Events.Get.ById;
 using WhatPlans.Application.Events.Update;
 
 namespace WhatPlans.Api.Controllers;

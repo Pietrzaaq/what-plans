@@ -5,7 +5,7 @@ using MongoDB.Driver;
 using WhatPlans.Application.Interfaces;
 using WhatPlans.Domain.Entities;
 
-namespace WhatPlans.Application.Places.Get;
+namespace WhatPlans.Application.Places.Get.All;
 
 public class GetPlacesRequestHandler : IRequestHandler<GetPlacesRequest, List<PlaceWithLocation>>
 {
@@ -24,10 +24,10 @@ public class GetPlacesRequestHandler : IRequestHandler<GetPlacesRequest, List<Pl
             {
                 { "$lookup", new BsonDocument
                     {
-                        { "from", "Locations" }, // The collection to join with
-                        { "localField", "LocationId" }, // Field in the "Place" collection
-                        { "foreignField", "_id" }, // Field in the "Location" collection
-                        { "as", "Location" } // The result will be stored in the "Location" field
+                        { "from", "Locations" },
+                        { "localField", "LocationId" },
+                        { "foreignField", "_id" },
+                        { "as", "Location" }
                     }
                 }
             },
@@ -41,7 +41,7 @@ public class GetPlacesRequestHandler : IRequestHandler<GetPlacesRequest, List<Pl
                     {
                         { "Id", 1 },
                         { "PlaceType", 1 },
-                        { "Location", 1 }, // The joined Location object
+                        { "Location", 1 },
                         { "CreatorId", 1 },
                         { "Name", 1 },
                         { "Description", 1 },

@@ -3,7 +3,7 @@ using MongoDB.Driver;
 using WhatPlans.Application.Interfaces;
 using WhatPlans.Domain.Entities;
 
-namespace WhatPlans.Application.Places.Get;
+namespace WhatPlans.Application.Places.Get.ById;
 
 public class GetPlaceByIdRequestHandler : IRequestHandler<GetPlaceByIdRequest, Place>
 {

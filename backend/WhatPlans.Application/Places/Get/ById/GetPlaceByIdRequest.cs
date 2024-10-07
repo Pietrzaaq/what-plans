@@ -1,9 +1,9 @@
 ﻿using MediatR;
-using WhatPlans.Domain.Entities;
 using Microsoft.AspNetCore.Mvc;
 using MongoDB.Bson;
+using WhatPlans.Domain.Entities;
 
-namespace WhatPlans.Application.Places.Get;
+namespace WhatPlans.Application.Places.Get.ById;
 
 public class GetPlaceByIdRequest : IRequest<Place>
 {

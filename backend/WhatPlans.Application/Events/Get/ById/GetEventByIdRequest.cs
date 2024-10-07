@@ -1,10 +1,9 @@
 ﻿using MediatR;
-using WhatPlans.Domain.Entities;
 using Microsoft.AspNetCore.Mvc;
 using MongoDB.Bson;
+using WhatPlans.Domain.Entities;
 
-
-namespace WhatPlans.Application.Events.Get;
+namespace WhatPlans.Application.Events.Get.ById;
 
 public class GetEventByIdRequest : IRequest<Event>
 {

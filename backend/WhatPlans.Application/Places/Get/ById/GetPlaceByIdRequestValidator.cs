@@ -2,7 +2,7 @@
 using WhatPlans.Application.Interfaces;
 using WhatPlans.Application.Places.Validators;
 
-namespace WhatPlans.Application.Places.Get;
+namespace WhatPlans.Application.Places.Get.ById;
 
 public class GetPlaceByIdRequestValidator : AbstractValidator<GetPlaceByIdRequest>
 {

@@ -18,3 +18,16 @@ public class Place
     public int? Capacity { get; set; }
     public List<string> ImageUrls { get; set; }
 }
+
+[BsonIgnoreExtraElements]
+public class PlaceWithLocation : Place
+{
+    public Location Location { get; set; }
+}
+
+[BsonIgnoreExtraElements]
+public class PlaceWithEvents : PlaceWithLocation
+{
+    public List<Event> Events { get; set; }
+}
+

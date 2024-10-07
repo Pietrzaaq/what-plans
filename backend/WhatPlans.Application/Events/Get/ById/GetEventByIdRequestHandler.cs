@@ -3,7 +3,7 @@ using MongoDB.Driver;
 using WhatPlans.Application.Interfaces;
 using WhatPlans.Domain.Entities;
 
-namespace WhatPlans.Application.Events.Get;
+namespace WhatPlans.Application.Events.Get.ById;
 
 public class GetEventByIdRequestHandler : IRequestHandler<GetEventByIdRequest, Event>
 {
