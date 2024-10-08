@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Mvc;
 using WhatPlans.Application.Places.Create;
 using WhatPlans.Application.Places.Delete;
 using WhatPlans.Application.Places.Get.All;
+using WhatPlans.Application.Places.Get.AllWithEvents;
 using WhatPlans.Application.Places.Get.ById;
 using WhatPlans.Application.Places.Get.ByIdWithEvents;
 using WhatPlans.Application.Places.Update;
@@ -17,6 +18,10 @@ public class PlacesController : BaseController
     
     [HttpGet]
     public Task<IActionResult> GetPlaces(GetPlacesRequest request)
+        => ExecuteAsync(request);
+    
+    [HttpGet("events")]
+    public Task<IActionResult> GetPlacesWithEvents(GetAllWithEventsRequest request)
         => ExecuteAsync(request);
     
     [HttpGet("{id}/events")]
