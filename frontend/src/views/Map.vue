@@ -131,7 +131,7 @@ async function initializeMap() {
 
 async function loadData() {
     if (mapType.value === MAP_TYPES.EVENT) {
-        await eventsStore.loadAll();
+        await placesStore.loadAllWithEvents();
     } else {
         await placesStore.loadAll();
     }
@@ -146,42 +146,42 @@ async function loadMarkers() {
     }
     markerLayer.value = L.layerGroup().addTo(map.value);
     
-    if (mapType.value === MAP_TYPES.EVENT) {
-        const locationMap = groupBy(eventsStore.events, e => e.location.id);
-
-        if (locationMap.size === 1) {
-            let marker;
-
-            marker = getEventMarker(locationMap[0]);
-
-            marker.getPopup().on('remove', hidePopup);
-            marker.addTo(markerLayer.value);
-        }
-
-        locationMap.forEach(events => {
-            let marker;
-
-            marker = getEventMarker(events);
-
-            marker.getPopup().on('remove', hidePopup);
-            marker.addTo(markerLayer.value);
-        });
-    } else {
-        placesStore.places.forEach(place => {
-            let marker;
-            
-            if (!eventTypes.value.includes(place.placeType.toString()))
-                return;
-                
-            marker = getPlaceMarker(place);
-
-            marker.getPopup().on('remove', hidePopup);
-            marker.addTo(markerLayer.value);
-        });
-    }
-
+    if (mapType.value === MAP_TYPES.EVENT) 
+        loadEventsMarkers();
+    else 
+        loadPlacesMarkers();
+    
     scaleIcon();
 }
+
+function loadEventsMarkers() {
+    placesStore.places.forEach(place => {
+        let marker;
+
+        if (!eventTypes.value.includes(place.placeType.toString()))
+            return;
+
+        marker = getEventMarker(place);
+
+        marker.getPopup().on('remove', hidePopup);
+        marker.addTo(markerLayer.value);
+    });
+}
+
+function loadPlacesMarkers() {
+    placesStore.places.forEach(place => {
+        let marker;
+
+        if (!eventTypes.value.includes(place.placeType.toString()))
+            return;
+
+        marker = getPlaceMarker(place);
+
+        marker.getPopup().on('remove', hidePopup);
+        marker.addTo(markerLayer.value);
+    });
+}
+
 
 function getPlaceMarker(place) {
     const latLng = [place.location.latitude, place.location.longitude];
@@ -212,18 +212,16 @@ function getPlaceMarker(place) {
     marker.addTo(map.value);
     marker.on('click', showPlacePopup);
 
-
     return marker;
 }
 
-function getEventMarker(events) {
+function getEventMarker(place) {
     let marker;
-    const event = events[0];
-    const latLng = [event.location.latitude, event.location.longitude];
-    const eventIds = events.map(e => e.id);
+    const event = place.events[0];
+    const latLng = [place.location.latitude, place.location.longitude];
     
     const markerOptions = {
-        eventIds: eventIds,
+        placeId: place.id,
         autoClose: true,
         autoPan: false,
         closeButton: false,
@@ -295,7 +293,7 @@ onMounted(() => {
     <EventPopup
         v-if="isEventPopupVisible"
         :teleportTo="teleportTo"
-        :popup-event="popupTargetObject"
+        :popup-place="popupTargetObject"
         @addEvent="openEventDialog"></EventPopup>
     <EventDialog
         :visible="isDialogVisible"

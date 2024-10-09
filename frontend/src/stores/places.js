@@ -11,10 +11,17 @@ export const usePlacesStore = defineStore(
 
         _places.value = result.data;
     }
+    
+    async function loadAllWithEvents() {
+        const result = await placesService.getAllWithEvents();
+
+        _places.value = result.data;
+    }
 
     return { 
         _places, 
         places,
-        loadAll
+        loadAll,
+        loadAllWithEvents
     };
 });

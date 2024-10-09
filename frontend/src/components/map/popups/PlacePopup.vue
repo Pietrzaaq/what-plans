@@ -10,6 +10,7 @@ const props = defineProps(['teleportTo', 'popupPlace']);
 
 const teleportToRef = toRef(props.teleportTo);
 const place = toRef(props.popupPlace);
+const placeEvents = toRef([]);
 const favoritesStore = useFavoritesStore();
 
 watch(teleportToRef, function () {});
@@ -37,7 +38,7 @@ function addEvent() {
 }
 
 onMounted(() => {
-    favoritesStore.loadAll();
+    
 });
 </script>
 
@@ -67,7 +68,7 @@ onMounted(() => {
                         </Galleria>
                     </div>
                     <div class="flex flex-column w-full text-center justify-content-center  py-2">
-                        <a :href="place.url" v-if="place" class="font-bold text-lg">{{ place.name }}</a>
+                        <a :href="place.url" v-if="place" class="font-bold text-black-50 text-lg">{{ place.name }}</a>
                         <div>
                             {{ PLACE_TYPES_DATA[place.placeType].name }}
                         </div>
@@ -79,8 +80,8 @@ onMounted(() => {
 
                 </template>
                 <template #content>
-                    <Accordion v-if="place.events.length > 0" :activeIndex="0" class="flex flex-column gap-2 pb-4" >
-                        <AccordionTab v-for="event in place.events" :key="event.id">
+                    <Accordion v-if="placeEvents.length > 0" :activeIndex="0" class="flex flex-column gap-2 pb-4" >
+                        <AccordionTab v-for="event in placeEvents" :key="event.id">
                             <template #header>
                                 <div class="flex flex-column w-full gap-2">
                                     <LongText class="text-black-50 text-sm font-medium w-10" :text="event.name">{{ event.name }}</LongText>
