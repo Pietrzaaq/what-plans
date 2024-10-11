@@ -1,9 +1,12 @@
 ﻿<script setup>
 import { onMounted, toRef, watch } from 'vue';
 import { PLACE_TYPES_DATA } from "@/models/placeTypes.js";
-import moment from "moment";
 import FavoriteButton from "@/components/shared/FavoriteButton.vue";
 import { useFavoritesStore } from "@/stores/favorites.js";
+import LongTextLink from "@/components/shared/LongTextLink.vue";
+import { FontAwesomeIcon } from "@fortawesome/vue-fontawesome";
+import eventsService from "@/services/eventsService.js";
+import EventItem from "@/components/map/popups/EventItem.vue";
 
 const emit = defineEmits(['addEvent']);
 const props = defineProps(['teleportTo', 'popupPlace']);
@@ -15,30 +18,22 @@ const favoritesStore = useFavoritesStore();
 
 watch(teleportToRef, function () {});
 
-function formatDate(date) {
-    return moment(date).format('LLL');
-}
-
-function buyTicket(event) {
-    window.open(event.url, '_blank');
-}
-
 function toggleFavoritePlace(placeId) {
     const isFavorite = favoritesStore.isPlaceFavorite(placeId);
     favoritesStore.togglePlaceFavorite(placeId, isFavorite.value);
-}
-
-function toggleFavoriteEvent(eventId) {
-    const isFavorite = favoritesStore.isEventFavorite(eventId);
-    favoritesStore.toggleEventFavorite(eventId, isFavorite.value);
 }
 
 function addEvent() {
     emit('addEvent', place.value);
 }
 
-onMounted(() => {
-    
+async function loadEvents() {
+    placeEvents.value = await eventsService.getAllForPlace(place.value.id);
+}
+
+onMounted( async() => {
+    await loadEvents();
+    console.log('On popup mounted');
 });
 </script>
 
@@ -47,8 +42,12 @@ onMounted(() => {
         <Transition appear>
             <Card v-if="place" class="area-popup">
                 <template #header>
-                    <div class="relative">
-                        <FavoriteButton :is-favorite="favoritesStore.isPlaceFavorite(place.id)" @toggle-favorite="toggleFavoritePlace(place.id)" />
+                    <div v-if="place.imageUrls.length > 0" class="relative">
+                        <FavoriteButton
+                            class="absolute align-self-end mr-3 mt-3"
+                            style="z-index: 100; right: 0"
+                            :is-favorite="favoritesStore.isPlaceFavorite(place.id)"
+                            @toggle-favorite="toggleFavoritePlace(place.id)"/>
                         <Galleria
                             :value="place.imageUrls"
                             :numVisible="5"
@@ -56,7 +55,7 @@ onMounted(() => {
                             :showIndicators="true"
                             :changeItemOnIndicatorHover="true"
                             :showIndicatorsOnItem="true"
-                            :showItemNavigators="true"
+                            :showItemNavigators="place.imageUrls.length > 1"
                             :showThumbnails="false"
                             indicatorsPosition="bottom">
                             <template #item="slotProps">
@@ -67,54 +66,42 @@ onMounted(() => {
                             </template>
                         </Galleria>
                     </div>
-                    <div class="flex flex-column w-full text-center justify-content-center  py-2">
-                        <a :href="place.url" v-if="place" class="font-bold text-black-50 text-lg">{{ place.name }}</a>
+                    <div class="flex flex-column w-full text-center justify-content-center py-2">
+                        <LongTextLink
+                            class="font-bold w-full text-center text-l" :to="`/?placeId=${place.id}`"
+                            :text="place.name"/>
                         <div>
                             {{ PLACE_TYPES_DATA[place.placeType].name }}
                         </div>
                         <div class="text-left px-3">
-                            <span class="font-medium">Address:</span>
-                            <div>{{ place.location.address }}</div>
+                            <div class="flex flex-column font-medium pb-1">
+                                <div class="flex align-items-center py-1">
+                                    <font-awesome-icon icon="fas fa-house"></font-awesome-icon>
+                                    <span class="ml-1">Address:</span>
+                                </div>
+                                <LongText class="flex w-full" :text="place.location.address">{{ place.location.address }}</LongText>
+                            </div>
                         </div>
                     </div>
-
                 </template>
                 <template #content>
-                    <Accordion v-if="placeEvents.length > 0" :activeIndex="0" class="flex flex-column gap-2 pb-4" >
-                        <AccordionTab v-for="event in placeEvents" :key="event.id">
-                            <template #header>
-                                <div class="flex flex-column w-full gap-2">
-                                    <LongText class="text-black-50 text-sm font-medium w-10" :text="event.name">{{ event.name }}</LongText>
-                                    <div class="text-xs">{{ formatDate(event.startDate) }}</div>
-                                </div>
-                            </template>
-                            <div>
-                                <div class="relative flex flex-column">
-                                    <FavoriteButton :is-favorite="favoritesStore.isEventFavorite(event.id)" @toggle-favorite="toggleFavoriteEvent(event.id)"/>
-                                    <Galleria
-                                        v-if="event"
-                                        :value="event.imageUrls"
-                                        :numVisible="5"
-                                        :showThumbnails="false"
-                                        :showIndicators="true"
-                                        :changeItemOnIndicatorHover="true"
-                                        :showIndicatorsOnItem="true"
-                                        indicatorsPosition="bottom">
-                                        <template #item="slotProps">
-                                            <img
-                                                :src="slotProps.item"
-                                                :alt="event.name"
-                                                style="min-width: 100%; width: 100%; height: 10rem; display: block" />
-                                        </template>
-                                    </Galleria>
-                                </div>
-                                <div class="flex w-full justify-content-center py-2">
-                                    <Button icon="fas fa-ticket" class="w-full" label="Buy the ticket" @click="buyTicket(event)"></Button>
-                                </div>
+                    <DataView
+                        v-if="placeEvents.length > 1"
+                        :value="placeEvents"
+                        :paginator="placeEvents.length > 2"
+                        :rows="2">
+                        <template #header>
+                            <div class="w-full text-center">
+                                <div class="text-light text-sm">{{ `${placeEvents.length} Events` }}</div>
                             </div>
-                        </AccordionTab>
-                    </Accordion>
-                    <div v-else class="text-lg font-medium pb-2">
+                        </template>
+                        <template #list="slotProps">
+                            <div class="flex flex-column w-full">
+                                <EventItem v-for="item in slotProps" :key="item.id" :item="item"/>
+                            </div>
+                        </template>
+                    </DataView>
+                    <div v-else class="text-lg text-center font-medium pb-2">
                         No upcoming events...
                     </div>
                 </template>
@@ -122,6 +109,18 @@ onMounted(() => {
         </Transition>
     </Teleport>
 </template>
+
+<style>
+.place-popup {
+    display: flex;
+    flex-direction: column;
+    padding: 0 !important;
+    min-width: 25rem !important;
+    max-width: 25rem !important;
+    max-height: 35rem !important;
+    border-radius: 2rem !important;
+}
+</style>
 
 <style scoped>
 :deep(.p-card) {
@@ -150,5 +149,4 @@ onMounted(() => {
 :deep(.p-galleria-indicators) {
     padding: 0.2rem;
 }
-
 </style>

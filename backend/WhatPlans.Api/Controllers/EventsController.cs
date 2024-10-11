@@ -19,7 +19,7 @@ public class EventsController : BaseController
     public Task<IActionResult> GetEvents(GetEventsRequest request)
         => ExecuteAsync(request);
     
-    [HttpGet("/places/{placeId}")]
+    [HttpGet("places/{placeId}")]
     public Task<IActionResult> GetEventsByPlaceId(GetEventsByPlaceIdRequest request)
         => ExecuteAsync(request);
     
