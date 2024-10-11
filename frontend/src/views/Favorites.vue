@@ -55,7 +55,11 @@ onMounted(() => {
                             :title="event.name">
                             <template #content>
                                 <div class="relative flex flex-column">
-                                    <FavoriteButton :is-favorite="favoritesStore.isEventFavorite(event.id)" @toggle-favorite="toggleFavoriteEvent(event.id)"/>
+                                    <FavoriteButton
+                                        :is-favorite="favoritesStore.isEventFavorite(event.id)"
+                                        class="absolute align-self-end mr-3 mt-3"
+                                        style="z-index: 100; right: 0"
+                                        @toggle-favorite="toggleFavoriteEvent(event.id)"/>
                                     <img :src="event.imageUrls[0]" alt="Event Image" class="event-image" />
                                 </div>
                                 <div class="event-content">
@@ -75,8 +79,12 @@ onMounted(() => {
                         <Card v-for="place in favoritePlaces" :key="place.id" class="p-col-12 p-md-6 p-lg-4">
                             <template #header>
                                 <div class="relative">
-                                    <FavoriteButton :is-favorite="favoritesStore.isPlaceFavorite(place.id)" @toggle-favorite="toggleFavoritePlace(place.id)"/>
-                                    <img :src="place.imageUrls[0]" alt="Place Image" class="place-image" />
+                                    <FavoriteButton
+                                        :is-favorite="favoritesStore.isPlaceFavorite(place.id)"
+                                        class="absolute align-self-end mr-3 mt-3"
+                                        style="z-index: 100; right: 0"
+                                        @toggle-favorite="toggleFavoritePlace(place.id)"/>
+                                    <img :src="place.imageUrls[0]" alt="Place Image" class="place-image max-w-30rem" />
                                 </div>
                             </template>
                             <template #title>

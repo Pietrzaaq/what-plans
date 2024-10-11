@@ -2,8 +2,9 @@
 import FavoriteButton from "@/components/shared/FavoriteButton.vue";
 import { useFavoritesStore } from "@/stores/favorites.js";
 import { computed, ref, toRef } from "vue";
-import moment from "moment/moment.js";
+import moment from 'moment';
 import { FontAwesomeIcon } from "@fortawesome/vue-fontawesome";
+import LongTextLink from "@/components/shared/LongTextLink.vue";
 
 const favoritesStore = useFavoritesStore();
 
@@ -16,14 +17,17 @@ function toggleFavorite() {
     favoritesStore.toggleEventFavorite(item.value.id, isFavorite.value);
     isFavorite.value = !isFavorite.value;
 }
+
+function buyTicket() {
+    window.open(item.value.url, '_blank');
+}
 </script>
 
 <template>
-    <div v-if="item && item.id" class="flex w-full p-2 gap-2">
-        <div class="flex w-10rem">
+    <div v-if="item && item.id" class="flex flex-column justify-content-between md:flex-row p-2 gap-2">
+        <div class="flex justify-content-center align-items-center w-full md:w-3">
             <Galleria
                 v-if="item"
-                class="h-full"
                 :value="item.imageUrls"
                 :numVisible="5"
                 :showThumbnails="false"
@@ -33,33 +37,33 @@ function toggleFavorite() {
                 indicatorsPosition="bottom">
                 <template #item="slotProps">
                     <img
+                        class="block xl:block"
                         :src="slotProps.item"
                         :alt="item.name"
-                        style="width: 8rem; height: 8rem; border-radius: 1rem; display: block" />
+                        style="width: 6rem; height: 6rem; border-radius: 1rem; display: block" />
                 </template>
             </Galleria>
         </div>
-        <div class="flex flex-column justify-content-between gap-2 w-full">
-            <div class="flex flex-column justify-content-center w-full gap-2">
-                <LongText class="font-bold text-xl pt-2" :text="item.name">
-                    <RouterLink :to="`/?eventId=${item.id}`">{{ item.name}}</RouterLink>
-                </LongText>
-                <div class="w-full">
-                    <div>
-                        <font-awesome-icon icon="fas fa-calendar-days"></font-awesome-icon>
-                        <span class="font-medium ml-1">Date:</span>
-                    </div>
-                    <div class="text-lg">{{ startDate }}</div>
+        <div class="flex flex-column md:flex gap-2 max-w-15rem md:w-9">
+            <LongTextLink class="font-bold text-l w-full" :to="`/?eventId=${item.id}`" :text="item.name"/>
+            <div class="flex align-items-center gap-2 pb-1">
+                <div>
+                    <font-awesome-icon icon="fas fa-calendar-days"></font-awesome-icon>
+                    <span class="text-sm ml-1">Date:</span>
                 </div>
+                <div class="text-sm">{{ startDate }}</div>
             </div>
-            <FavoriteButton class="align-self-end" :is-favorite="isFavorite" :absolute="false" @toggle-favorite="toggleFavorite" />
+            <div class="flex align-items-center justify-content-end gap-2">
+                <Button v-if="item.url" icon="fas fa-ticket" :label="item.price" @click="buyTicket"></Button>
+                <FavoriteButton  :is-favorite="isFavorite" :absolute="false" @toggle-favorite="toggleFavorite"/>
+            </div>
         </div>
     </div>
 </template>
 
 <style scoped>
 :deep(.p-galleria) .p-galleria-indicators .p-galleria-indicator button {
-    width: 1rem;
-    height: 1rem;
+    width: 0.7rem;
+    height: 0.7rem;
 }
 </style>

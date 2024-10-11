@@ -17,14 +17,16 @@ import {
     faTableTennisPaddleBall,
     faCoffee,
     faLocationDot,
-    faFilter, 
+    faFilter,
     faCalendarDays,
     faMapPin,
     faHandPointer,
     faMasksTheater,
     faMusic,
     faUtensils,
-    faGlassCheers
+    faGlassCheers, 
+    faClock,
+    faHouse
 } from '@fortawesome/free-solid-svg-icons';
 
 library.add(
@@ -51,7 +53,9 @@ library.add(
     faMasksTheater,
     faMusic,
     faUtensils,
-    faGlassCheers);
+    faGlassCheers, 
+    faClock,
+    faHouse);
 
 export function initFontAwesome(app) {
     app.component('font-awesome-icon', FontAwesomeIcon);

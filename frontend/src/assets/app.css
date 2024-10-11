@@ -37,15 +37,6 @@
     width: fit-content !important;
 }
 
-.area-popup {
-    display: flex;
-    flex-direction: column;
-    padding: 0 !important;
-    min-width: 15rem !important;
-    max-width: 25rem !important;
-    min-height: 20rem !important;
-    max-height: 35rem !important;
-}
 
 .v-enter-active,
 .v-leave-active {
@@ -70,57 +61,8 @@
     display: flex;
 }
 
-.place-marker-content {
-    position: absolute;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    top: 50%;
-    left: 50%;
-    width: 100%;
-    height: 100%;
-    transform: translate(-50%, -50%);
-    border-radius: 50%;
-    opacity: 0.9;
-    border: 3px solid var(--gray-500);
-    font-size: 25px;
-    color: white;
-    transition: width 100ms, height 100ms, font-size 50ms;
-}
-
-.place-marker-content:hover { 
-    opacity: 1;
-    border: 3px solid var(--gray-800);
-}
-
-.place-marker-label {
-    display: flex;
-    font-size: 15px;
-    height: 100%;
-    align-items: center;
-    text-align: left;
-    margin-left: 3em;
-    width: 10rem;
-    font-weight: bold;
-    line-height: 20px;
-    transition: font-size 100ms;
-}
-
 .layout-static-inactive .layout-map-container .map-filter {
     left: 50px !important;
 }
 
-.map-filter {
-    z-index: 400;
-    width: 400px; 
-    top: 100px;
-    left: 350px;
-    border-radius: 10px
-}
 
-@media (max-width: 990px) {
-    .map-filter {
-        left: 50px;
-        max-width: 15rem;
-    }
-}

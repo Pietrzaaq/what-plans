@@ -8,7 +8,7 @@ export default {
     },
     data() {
         return {
-            tooltipText: null, // Tooltip content, null if not needed
+            tooltipText: null
         };
     },
     mounted() {
@@ -18,9 +18,9 @@ export default {
         checkOverflow() {
             const container = this.$refs.container;
             if (container.scrollWidth > container.clientWidth) {
-                this.tooltipText = this.text; // Text is overflowing, set tooltip
+                this.tooltipText = this.text;
             } else {
-                this.tooltipText = null; // No overflow, hide tooltip
+                this.tooltipText = null;
             }
         },
     },
@@ -29,15 +29,19 @@ export default {
 
 <template>
     <div ref="container" class="overflow-container" v-tooltip="tooltipText" @mouseover="checkOverflow">
-        <span>{{ text }}</span>
+        <slot>
+            {{ text }}
+        </slot>
     </div>
 </template>
 
 <style scoped>
 .overflow-container {
+    display: inline-block;
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
-    width: 100%; /* Adjust width according to parent or layout */
+    text-wrap: nowrap;
+    width: 100%;
 }
 </style>

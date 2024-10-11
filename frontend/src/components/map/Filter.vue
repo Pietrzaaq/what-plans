@@ -104,6 +104,19 @@ onMounted(() => {
 
 </template>
 
-<style scoped>
+<style>
+.map-filter {
+    z-index: 400;
+    width: 400px;
+    top: 100px;
+    left: 350px;
+    border-radius: 10px
+}
 
+@media (max-width: 990px) {
+    .map-filter {
+        left: 50px;
+        max-width: 15rem;
+    }
+}
 </style>

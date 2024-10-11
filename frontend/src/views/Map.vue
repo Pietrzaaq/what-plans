@@ -102,7 +102,7 @@ function onMoveEnd() {
 
     if (center.value.lat !== newCenterValue.lat && center.value.lng !== newCenterValue.lng) {
         console.log('New center value', newCenterValue);
-        center.value = newCenterValue;
+        center.value = [newCenterValue.lat, newCenterValue.lng];
     }
 }
 
@@ -250,17 +250,18 @@ function scaleIcon() {
         const label = marker.querySelector('.place-marker-label');
         const newSize = 50 * scale; 
         const newFontSize = 25 * scale; 
-        const newLineHeight = 25 * scale;
+        const newLabelFontSize = 15 * scale; 
+        const newLineHeight = 15 * scale;
 
         content.style.width = newSize + 'px';
         content.style.height = newSize + 'px';
         content.style.fontSize = newFontSize + 'px';
         
-        if (zoom < 11)
+        if (zoom < 14)
             label.style.display = 'none';
         else {
             label.style.display = 'flex';
-            label.style.fontSize = newFontSize + 'px';
+            label.style.fontSize = newLabelFontSize + 'px';
             label.style.lineHeight = newLineHeight + 'px';
         }
     });
@@ -284,7 +285,7 @@ onMounted(() => {
     <main style="width: 100vw; height: 100vh">
         <div id="map" style="height: 100%" @load="onMapLoad"></div>
     </main>
-    <Filter class="absolute"></Filter>
+    <Filter></Filter>
     <PlacePopup
         v-if="isPlacePopupVisible" 
         :teleportTo="teleportTo" 
@@ -304,6 +305,47 @@ onMounted(() => {
 <style>
 .leaflet-container a {
     color: black !important;
+}
+
+.place-marker-content {
+    position: absolute;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    top: 50%;
+    left: 50%;
+    width: 100%;
+    height: 100%;
+    transform: translate(-50%, -50%);
+    border-radius: 50%;
+    opacity: 0.9;
+    border: 3px solid var(--gray-500);
+    font-size: 25px;
+    color: white;
+    transition: width 100ms, height 100ms, font-size 50ms;
+}
+
+.place-marker:hover .place-marker-content {
+    opacity: 1;
+    border: 3px solid var(--primary-400);
+}
+
+.place-marker:hover .place-marker-label {
+    color: var(--primary-400);
+}
+
+.place-marker-label {
+    display: flex;
+    font-size: 10px;
+    height: 100%;
+    align-items: center;
+    text-align: left;
+    margin-left: 4.5em;
+    max-width: 10rem;
+    font-weight: 500;
+    line-height: 20px;
+    text-shadow: 1px 1px 1px var(--gray-200);
+    transition: font-size 100ms;
 }
 </style>
 
