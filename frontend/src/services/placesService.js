@@ -1,8 +1,12 @@
 ﻿import axios from "axios";
 export default new class PlacesService {
 
-    async getAll() {
-        return await axios.get('https://localhost:5000/api/places');
+    async getAll(geohashes) {
+        return await axios.get('https://localhost:5000/api/places', {
+            params: {
+                geohashes: geohashes
+            }
+        });
     }
 
     async getAllWithEvents() {

@@ -6,10 +6,10 @@ export const usePlacesStore = defineStore(
     'places', () => {
     const _places = ref([]);
     const places = computed(() => _places.value);
-    async function loadAll() {
-        const result = await placesService.getAll();
+    async function loadAll(geohashes) {
+        const result = await placesService.getAll(geohashes);
 
-        _places.value = result.data;
+        _places.value.push(...result.data);
     }
     
     async function loadAllWithEvents() {
@@ -17,11 +17,16 @@ export const usePlacesStore = defineStore(
 
         _places.value = result.data;
     }
+    
+    function clear() {
+        _places.value = [];
+    }
 
     return { 
         _places, 
         places,
         loadAll,
-        loadAllWithEvents
+        loadAllWithEvents,
+        clear
     };
 });

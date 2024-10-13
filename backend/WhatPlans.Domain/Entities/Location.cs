@@ -1,10 +1,9 @@
-﻿using MongoDB.Bson;
-
-namespace WhatPlans.Domain.Entities;
+﻿namespace WhatPlans.Domain.Entities;
 
 public class Location
 {
     public string Name { get; set; }
+    public string Geohash { get; set; }
     public double Latitude { get; set; }
     public double Longitude { get; set; }
     public string Address { get; set; }

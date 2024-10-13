@@ -16,8 +16,7 @@ import PlacePopup from "@/components/map/popups/PlacePopup.vue";
 import { PLACE_TYPES_DATA } from "@/models/placeTypes.js";
 import { useFilterStore } from "@/stores/filter.js";
 import { MAP_TYPES } from "@/models/mapTypes.js";
-import { useEventsStore } from "@/stores/events.js";
-import { groupBy } from "@/helpers/helpers.js";
+import geolocationService from "@/services/geolocationService.js";
 
 // Stores
 const globalStore = useGlobalStore();
@@ -25,16 +24,22 @@ const { center } = storeToRefs(globalStore);
 const filterStore = useFilterStore();
 const { mapType, eventTypes } = storeToRefs(filterStore);
 const placesStore = usePlacesStore();
-const eventsStore = useEventsStore();
 
 watch(center, (newVal) => {
     if (newVal) {
+        placesStore.clear();
+        loadedGeohashes.value = [];
+        geohashesToLoad.value = [];
+        console.log('Cleared after city change');
         map.value.setView(newVal, zoom.value);
     }
 });
 
 watch(mapType, async() => {
-    await loadData();
+    placesStore.clear();
+    loadedGeohashes.value = [];
+    geohashesToLoad.value = [];
+    await loadGeohashes();
 });
 
 watch(eventTypes, async() => {
@@ -44,9 +49,12 @@ watch(eventTypes, async() => {
 // Map
 const map = ref(null);
 const zoom = ref(13);
-const bounds = ref(null);
 const url = ref(`https://api.maptiler.com/maps/basic-v2/{z}/{x}/{y}.png?key=${import.meta.env.VITE_MAP_TILER_API_KEY}`);
 const markerLayer = ref(null);
+const loadedGeohashes = ref([]);
+const currentGeohashes = ref([]);
+const geohashesToLoad = ref([]);
+const geohashPrecision = ref(4);
 
 // Dialog
 const isDialogVisible = ref(false);
@@ -55,22 +63,73 @@ const dialogArea = ref(null);
 //Popup
 const { teleportTo, isPlacePopupVisible, isEventPopupVisible, popupTargetObject, showPlacePopup, showEventPopup, hidePopup } = usePopup();
 
-function onMapClick(e) {
-    console.log('onMapClick', e);
+function initializeMap() {
+    map.value = L.map('map', {
+        center: L.latLng(center.value[0], center.value[1]),
+        zoom: zoom.value,
+        doubleClickZoom: false,
+        zoomAnimation: false
+    });
+
+    map.value.on('load', onMapLoad);
+    map.value.on('moveend', OnMapChanged);
+    map.value.on('zoom', scaleIcon);
+    map.value.on('click', onMapClick);
+    map.value.on('unload', onMapUnload);
+
+    const tileLayer = L.tileLayer(url.value, {
+        minZoom: 4,
+        maxZoom: 19,
+        closePopupOnClick: false,
+        attribution: '<span>Projekt wykonany w ramach pracy magisterkiej na Uniwersytecie Łódzkim</span> &copy; <a href="http://www.openstreetmap.org/copyright">OpenStreetMap</a>'
+    });
+    
+    tileLayer.on('tileerror', () => {
+        tileLayer.setUrl('https://tile.openstreetmap.org/{z}/{x}/{y}.png');
+    });
+    
+    tileLayer.addTo(map.value);
 }
 
-// Polygon
+
+async function OnMapChanged() {
+    const newZoomValue = map.value.getZoom();
+    if (zoom.value !== newZoomValue) {
+        zoom.value = newZoomValue;
+    }
+
+    const newCenterValue = map.value.getCenter();
+    if (center.value.lat !== newCenterValue.lat && center.value.lng !== newCenterValue.lng) {
+        center.value = [newCenterValue.lat, newCenterValue.lng];
+    }
+    
+    await loadGeohashes();
+}
+
+async function loadGeohashes() {
+    const precision = geolocationService.getGeohashPrecision(zoom.value);
+
+    if (geohashPrecision.value !== precision) {
+        geohashPrecision.value = precision;
+        placesStore.clear();
+        loadedGeohashes.value = [];
+        geohashesToLoad.value = [];
+    }
+
+    const bounds = map.value.getBounds();
+    currentGeohashes.value = geolocationService.getBoundingBoxGeohashes(bounds, geohashPrecision.value);
+
+    geohashesToLoad.value = currentGeohashes.value.filter(g => !loadedGeohashes.value.includes(g));
+    if (geohashesToLoad.value.length > 0) {
+        await loadData();
+    }
+}
+
 function onDialogClosed() {
     dialogArea.value = null;
     isDialogVisible.value = false;
-    
-    loadMarkers();
-}
 
-function boundsUpdated(newBoundsValue) {
-    if (bounds.value !== newBoundsValue) {
-        bounds.value = newBoundsValue;
-    }
+    loadMarkers();
 }
 
 function openEventDialog(area) {
@@ -82,61 +141,29 @@ function onMapLoad() {
     console.log('Map load!');
 }
 
-function onMapUnload() {}
-
-function onZoomEnd(event) {
-    console.log(event);
-    console.log(zoom.value);
-    const newZoomValue = event.target._zoom;
-    console.log(newZoomValue);
-
-    if (zoom.value !== newZoomValue) {
-        console.log('New zoom value', newZoomValue);
-        zoom.value = newZoomValue;
-    }
+function onMapUnload() {
+    console.log('Map unload!');
 }
 
-function onMoveEnd() {
-    console.log('onMoveEnd');
-    const newCenterValue = map.value.getCenter();
-
-    if (center.value.lat !== newCenterValue.lat && center.value.lng !== newCenterValue.lng) {
-        console.log('New center value', newCenterValue);
-        center.value = [newCenterValue.lat, newCenterValue.lng];
-    }
-}
-
-async function initializeMap() {
-    map.value = L.map('map', {
-        center: L.latLng(center.value[0], center.value[1]),
-        zoom: zoom.value
-    });
-
-    map.value.on('load', onMapLoad);
-    map.value.on('zoom', scaleIcon);
-    map.value.on('zoomend', onZoomEnd);
-    map.value.on('moveend', onMoveEnd);
-    map.value.on('click', onMapClick);
-    map.value.on('unload', onMapUnload);
-
-    L.tileLayer(url.value, {
-        minZoom: 4,
-        maxZoom: 19,
-        closePopupOnClick: false,
-        attribution: '<span>Projekt wykonany w ramach pracy magisterkiej na Uniwersytecie Łódzkim</span> &copy; <a href="http://www.openstreetmap.org/copyright">OpenStreetMap</a>'
-    }).addTo(map.value);
-    
-    await loadData();
+function onMapClick(e) {
+    console.log('onMapClick', e.latlng.lat, e.latlng.lng);
 }
 
 async function loadData() {
-    if (mapType.value === MAP_TYPES.EVENT) {
+    let isModified;
+    const placesCount = placesStore.places.length;
+    
+    if (mapType.value === MAP_TYPES.EVENT)
         await placesStore.loadAllWithEvents();
-    } else {
-        await placesStore.loadAll();
-    }
-
-    await loadMarkers();
+    else 
+        await placesStore.loadAll(geohashesToLoad.value);
+    
+    loadedGeohashes.value.push(...geohashesToLoad.value);
+    geohashesToLoad.value = [];
+    isModified = placesCount !== placesStore.places.length;
+    
+    if (isModified) 
+        await loadMarkers();
 }
 
 async function loadMarkers() {
@@ -274,9 +301,11 @@ onBeforeMount(async () => {
     });
 });
 
-onMounted(() => {
+onMounted(async () => {
     initializeMap();
 
+    await loadGeohashes();
+    
     setTimeout(() => scaleIcon(), 100);
 });
 </script>
