@@ -85,7 +85,7 @@ async function loadMarkers() {
 function loadCitiesCircles() {
     console.log('loadCitiesCircles');
     mapStore.data.forEach(city => {
-        const circle = L.circle([city.latitude, city.longitude], { radius: 1000 });
+        const circle = L.circle([city.latitude, city.longitude], { radius: city.radius });
 
         circle.addTo(markerLayer.value);
     });
@@ -207,10 +207,11 @@ function scaleIcon() {
 const mapStore = useMapStore();
 const { zoom, center, currentGeohashes, loadedGeohashes, geohashesToLoad, geohashPrecision } = storeToRefs(mapStore);
 const map = ref(null);
-const url = ref(`https://tile.openstreetmap.org/{z}/{x}/{y}.png`);
+const url = ref(`https://api.maptiler.com/maps/basic-v2/{z}/{x}/{y}.png?key=${import.meta.env.VITE_MAP_TILER_API_KEY}`);
 const markerLayer = ref(null);
+const tileLayer = ref(null);
 
-function initializeMap() {
+async function initializeMap() {
     map.value = L.map('map', {
         center: L.latLng(center.value[0], center.value[1]),
         zoom: zoom.value,
@@ -224,18 +225,28 @@ function initializeMap() {
     map.value.on('click', onMapClick);
     map.value.on('unload', onMapUnload);
 
-    const tileLayer = L.tileLayer(url.value, {
-        minZoom: 4,
+    const mapTilerUrl = `https://api.maptiler.com/maps/basic-v2/{z}/{x}/{y}.png?key=${import.meta.env.VITE_MAP_TILER_API_KEY}`;
+    const openStreetMapUrl = 'https://tile.openstreetmap.org/{z}/{x}/{y}.png';
+
+    url.value = await checkTileProvider(mapTilerUrl) ? mapTilerUrl : openStreetMapUrl;
+
+    tileLayer.value = L.tileLayer(url.value, {
+        minZoom: 7,
         maxZoom: 19,
         closePopupOnClick: false,
         attribution: '<span>Projekt wykonany w ramach pracy magisterkiej na Uniwersytecie Łódzkim</span> &copy; <a href="http://www.openstreetmap.org/copyright">OpenStreetMap</a>'
     });
     
-    tileLayer.on('tileerror', () => {
-        tileLayer.setUrl('https://tile.openstreetmap.org/{z}/{x}/{y}.png');
-    });
-    
-    tileLayer.addTo(map.value);
+    tileLayer.value.addTo(map.value);
+}
+
+async function checkTileProvider(url) {
+    try {
+        const response = await fetch(url.replace('{z}', '0').replace('{x}', '0').replace('{y}', '0'));
+        return response.ok;
+    } catch (error) {
+        return false;
+    }
 }
 
 async function OnMapChanged() {
@@ -301,7 +312,7 @@ onBeforeMount(async () => {
 });
 
 onMounted(async () => {
-    initializeMap();
+    await initializeMap();
 
     await loadGeohashes();
 
