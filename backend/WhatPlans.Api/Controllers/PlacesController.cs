@@ -1,12 +1,5 @@
 ﻿using MediatR;
 using Microsoft.AspNetCore.Mvc;
-using WhatPlans.Application.Places.Create;
-using WhatPlans.Application.Places.Delete;
-using WhatPlans.Application.Places.Get.All;
-using WhatPlans.Application.Places.Get.AllWithEvents;
-using WhatPlans.Application.Places.Get.ById;
-using WhatPlans.Application.Places.Get.ByIdWithEvents;
-using WhatPlans.Application.Places.Update;
 
 namespace WhatPlans.Api.Controllers;
 
@@ -17,29 +10,29 @@ public class PlacesController : BaseController
         : base(mediator) { }
     
     [HttpGet]
-    public Task<IActionResult> GetPlaces(GetPlacesRequest request)
+    public Task<IActionResult> GetPlaces(Application.Places.Get.All.Request request)
         => ExecuteAsync(request);
     
     [HttpGet("events")]
-    public Task<IActionResult> GetPlacesWithEvents(GetAllWithEventsRequest request)
+    public Task<IActionResult> GetPlacesWithEvents(Application.Places.Get.AllWithEvents.Request request)
         => ExecuteAsync(request);
     
     [HttpGet("{id}/events")]
-    public Task<IActionResult> GetPlaceByIdWithEvents(GetPlaceWithEventsRequest request)
+    public Task<IActionResult> GetPlaceByIdWithEvents(Application.Places.Get.ByIdWithEvents.Request request)
         => ExecuteAsync(request);
     
     [HttpGet("{id}")]
-    public Task<IActionResult> GetPlaceById(GetPlaceByIdRequest request)
+    public Task<IActionResult> GetPlaceById(Application.Places.Get.ById.Request request)
         => ExecuteAsync(request);
     [HttpPost]
-    public Task<IActionResult> Create(CreatePlaceRequest request)
+    public Task<IActionResult> Create(Application.Places.Create.Request request)
         => ExecuteAsync(request);
     
     [HttpPut("{id}")]
-    public Task<IActionResult> UpdatePlace(UpdatePlaceRequest request)
+    public Task<IActionResult> UpdatePlace(Application.Places.Update.Request request)
         => ExecuteAsync(request);
     
     [HttpDelete("{id}")]
-    public Task<IActionResult> DeletePlace(DeletePlaceRequest request)
+    public Task<IActionResult> DeletePlace(Application.Places.Delete.Request request)
         => ExecuteAsync(request);
 }

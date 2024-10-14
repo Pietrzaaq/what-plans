@@ -1,11 +1,5 @@
 ﻿using MediatR;
 using Microsoft.AspNetCore.Mvc;
-using WhatPlans.Application.Events.Create;
-using WhatPlans.Application.Events.Delete;
-using WhatPlans.Application.Events.Get.All;
-using WhatPlans.Application.Events.Get.ById;
-using WhatPlans.Application.Events.Get.ByPlaceId;
-using WhatPlans.Application.Events.Update;
 
 namespace WhatPlans.Api.Controllers;
 
@@ -16,26 +10,26 @@ public class EventsController : BaseController
         : base(mediator) { }
     
     [HttpGet]
-    public Task<IActionResult> GetEvents(GetEventsRequest request)
+    public Task<IActionResult> GetEvents(Application.Events.Get.All.Request request)
         => ExecuteAsync(request);
     
     [HttpGet("places/{placeId}")]
-    public Task<IActionResult> GetEventsByPlaceId(GetEventsByPlaceIdRequest request)
+    public Task<IActionResult> GetEventsByPlaceId(Application.Events.Get.ByPlaceId.Request request)
         => ExecuteAsync(request);
     
     [HttpGet("{id}")]
-    public Task<IActionResult> GetEventById(GetEventByIdRequest request)
+    public Task<IActionResult> GetEventById(Application.Events.Get.ById.Request request)
         => ExecuteAsync(request);
     
     [HttpPost]
-    public Task<IActionResult> Create(CreateEventRequest request)
+    public Task<IActionResult> Create(Application.Events.Create.Request request)
         => ExecuteAsync(request);
     
     [HttpPut("{id}")]
-    public Task<IActionResult> UpdateEvent(UpdateEventRequest request)
+    public Task<IActionResult> UpdateEvent(Application.Events.Update.Request request)
         => ExecuteAsync(request);
     
     [HttpDelete("{id}")]
-    public Task<IActionResult> DeleteEvent(DeleteEventRequest request)
+    public Task<IActionResult> DeleteEvent(Application.Events.Delete.Request request)
         => ExecuteAsync(request);
 }
