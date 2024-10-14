@@ -3,7 +3,6 @@ import { onBeforeMount, onMounted, ref, watch } from 'vue';
 import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
 import { usePopup } from "../composables/map/popup";
-import { usePlacesStore } from "../stores/places.js";
 import EventDialog from "../components/map/EventDialog.vue";
 import 'leaflet.awesome-markers/dist/leaflet.awesome-markers.css'; 
 import 'leaflet.awesome-markers/dist/leaflet.awesome-markers.js';
@@ -17,28 +16,14 @@ import { PLACE_TYPES_DATA } from "@/models/placeTypes.js";
 import { useFilterStore } from "@/stores/filter.js";
 import { MAP_TYPES } from "@/models/mapTypes.js";
 import geolocationService from "@/services/geolocationService.js";
+import { useMapStore } from "@/stores/map.js";
 
-// Stores
-const globalStore = useGlobalStore();
-const { center } = storeToRefs(globalStore);
+// FILTER
 const filterStore = useFilterStore();
 const { mapType, eventTypes } = storeToRefs(filterStore);
-const placesStore = usePlacesStore();
-
-watch(center, (newVal) => {
-    if (newVal) {
-        placesStore.clear();
-        loadedGeohashes.value = [];
-        geohashesToLoad.value = [];
-        console.log('Cleared after city change');
-        map.value.setView(newVal, zoom.value);
-    }
-});
 
 watch(mapType, async() => {
-    placesStore.clear();
-    loadedGeohashes.value = [];
-    geohashesToLoad.value = [];
+    mapStore.clear();
     await loadGeohashes();
 });
 
@@ -46,22 +31,184 @@ watch(eventTypes, async() => {
     await loadMarkers();
 });
 
-// Map
-const map = ref(null);
-const zoom = ref(13);
-const url = ref(`https://api.maptiler.com/maps/basic-v2/{z}/{x}/{y}.png?key=${import.meta.env.VITE_MAP_TILER_API_KEY}`);
-const markerLayer = ref(null);
-const loadedGeohashes = ref([]);
-const currentGeohashes = ref([]);
-const geohashesToLoad = ref([]);
-const geohashPrecision = ref(4);
+// CITY
+const globalStore = useGlobalStore();
+const { city } = storeToRefs(globalStore);
 
-// Dialog
+watch(city, (newValue, oldValue) => {
+    if (newValue && oldValue) {
+        mapStore.clear();
+        const center = [newValue.latitude, newValue.longitude];
+        mapStore.setCenter(center);
+        map.value.setView(center, zoom.value);
+    }
+});
+
+// DIALOG
 const isDialogVisible = ref(false);
 const dialogArea = ref(null);
 
-//Popup
+function onDialogClosed() {
+    dialogArea.value = null;
+    isDialogVisible.value = false;
+
+    loadMarkers();
+}
+
+function openEventDialog(area) {
+    dialogArea.value = area;
+    isDialogVisible.value = true;
+}
+
+// POPUP
 const { teleportTo, isPlacePopupVisible, isEventPopupVisible, popupTargetObject, showPlacePopup, showEventPopup, hidePopup } = usePopup();
+
+
+// MARKERS
+async function loadMarkers() {
+    if (markerLayer.value) {
+        map.value.removeLayer(markerLayer.value);
+        markerLayer.value = null;
+    }
+    markerLayer.value = L.layerGroup().addTo(map.value);
+
+    if (geohashPrecision.value < 4) 
+        loadCitiesCircles();
+    else if (mapType.value === MAP_TYPES.EVENT)
+        loadEventsMarkers();
+    else
+        loadPlacesMarkers();
+
+    scaleIcon();
+}
+
+function loadCitiesCircles() {
+    console.log('loadCitiesCircles');
+    mapStore.data.forEach(city => {
+        const circle = L.circle([city.latitude, city.longitude], { radius: 1000 });
+
+        circle.addTo(markerLayer.value);
+    });
+}
+
+function loadEventsMarkers() {
+    mapStore.data.forEach(place => {
+        let marker;
+
+        if (!eventTypes.value.includes(place.placeType.toString()))
+            return;
+
+        marker = getEventMarker(place);
+
+        marker.getPopup().on('remove', hidePopup);
+        marker.addTo(markerLayer.value);
+    });
+}
+
+function loadPlacesMarkers() {
+    mapStore.data.forEach(place => {
+        let marker;
+
+        if (!eventTypes.value.includes(place.placeType.toString()))
+            return;
+
+        marker = getPlaceMarker(place);
+
+        marker.getPopup().on('remove', hidePopup);
+        marker.addTo(markerLayer.value);
+    });
+}
+
+function getPlaceMarker(place) {
+    const latLng = [place.location.latitude, place.location.longitude];
+
+    const typeData = PLACE_TYPES_DATA[place.placeType];
+    const html = `
+            <div class="place-marker-content" style="background-color: ${typeData.markerColor}">
+                <i class="fa fa-${typeData.icon}"></i>
+            </div>
+            <div class="place-marker-label">${place.name}</div>`;
+
+    const overlay = L.divIcon({
+        className: 'place-marker',
+        html: html,
+        iconSize: [50, 50],
+        iconAnchor: [25, 25]
+    });
+
+    const marker = L.marker(latLng, { icon: overlay });
+
+    marker.bindPopup(`<div class="place-popup"></div>`, {
+        placeId: place.id,
+        autoClose: true,
+        autoPan: false,
+        closeButton: false,
+        keepInView: true,
+    });
+    marker.addTo(map.value);
+    marker.on('click', showPlacePopup);
+
+    return marker;
+}
+
+function getEventMarker(place) {
+    let marker;
+    const event = place.events[0];
+    const latLng = [place.location.latitude, place.location.longitude];
+
+    const markerOptions = {
+        placeId: place.id,
+        autoClose: true,
+        autoPan: false,
+        closeButton: false,
+        keepInView: true,
+    };
+
+    const typeData = EVENT_TYPES_DATA[event.eventType];
+    const icon = L.AwesomeMarkers.icon({
+        icon: typeData.icon,
+        markerColor: typeData.markerColor,
+        prefix: 'fa'
+    });
+    marker = L.marker(latLng, { icon: icon });
+    marker.bindPopup(`<div class="event-popup"></div>`, markerOptions);
+    marker.on('click', showEventPopup);
+
+    return marker;
+}
+
+function scaleIcon() {
+    const zoom = map.value.getZoom();
+    const scale = Math.pow(0.9, 18 - zoom);
+
+    document.querySelectorAll('.place-marker').forEach(function(marker) {
+        const content = marker.querySelector('.place-marker-content');
+        const label = marker.querySelector('.place-marker-label');
+        const newSize = 50 * scale;
+        const newFontSize = 25 * scale;
+        const newLabelFontSize = 15 * scale;
+        const newLineHeight = 15 * scale;
+
+        content.style.width = newSize + 'px';
+        content.style.height = newSize + 'px';
+        content.style.fontSize = newFontSize + 'px';
+
+        if (zoom < 14)
+            label.style.display = 'none';
+        else {
+            label.style.display = 'flex';
+            label.style.fontSize = newLabelFontSize + 'px';
+            label.style.lineHeight = newLineHeight + 'px';
+        }
+    });
+}
+
+// MAP
+const mapStore = useMapStore();
+const { zoom, center, currentGeohashes, loadedGeohashes, geohashesToLoad, geohashPrecision } = storeToRefs(mapStore);
+const map = ref(null);
+const url = ref(`https://tile.openstreetmap.org/{z}/{x}/{y}.png`);
+const markerLayer = ref(null);
 
 function initializeMap() {
     map.value = L.map('map', {
@@ -91,16 +238,16 @@ function initializeMap() {
     tileLayer.addTo(map.value);
 }
 
-
 async function OnMapChanged() {
     const newZoomValue = map.value.getZoom();
     if (zoom.value !== newZoomValue) {
-        zoom.value = newZoomValue;
+        mapStore.setZoom(newZoomValue);
     }
 
     const newCenterValue = map.value.getCenter();
     if (center.value.lat !== newCenterValue.lat && center.value.lng !== newCenterValue.lng) {
-        center.value = [newCenterValue.lat, newCenterValue.lng];
+        const newCenter = [newCenterValue.lat, newCenterValue.lng];
+        mapStore.setCenter(newCenter);
     }
     
     await loadGeohashes();
@@ -110,31 +257,31 @@ async function loadGeohashes() {
     const precision = geolocationService.getGeohashPrecision(zoom.value);
 
     if (geohashPrecision.value !== precision) {
-        geohashPrecision.value = precision;
-        placesStore.clear();
-        loadedGeohashes.value = [];
-        geohashesToLoad.value = [];
+        mapStore.setGeohashPrecision(precision);
+        mapStore.clear();
     }
 
     const bounds = map.value.getBounds();
-    currentGeohashes.value = geolocationService.getBoundingBoxGeohashes(bounds, geohashPrecision.value);
+    const currGeohashes = geolocationService.getBoundingBoxGeohashes(bounds, geohashPrecision.value);
+    mapStore.setCurrentGeohashes(currGeohashes);
 
-    geohashesToLoad.value = currentGeohashes.value.filter(g => !loadedGeohashes.value.includes(g));
+    const geoToLoad = currentGeohashes.value.filter(g => !loadedGeohashes.value.includes(g));
+    mapStore.setGeohashesToLoad(geoToLoad);
+    
     if (geohashesToLoad.value.length > 0) {
         await loadData();
     }
 }
 
-function onDialogClosed() {
-    dialogArea.value = null;
-    isDialogVisible.value = false;
+async function loadData() {
+    let isModified;
+    const dataCount = mapStore.data.length;
 
-    loadMarkers();
-}
+    await mapStore.loadData(mapType.value);
 
-function openEventDialog(area) {
-    dialogArea.value = area;
-    isDialogVisible.value = true;
+    isModified = dataCount !== mapStore.data.length;
+    if (isModified)
+        await loadMarkers();
 }
 
 function onMapLoad() {
@@ -149,163 +296,15 @@ function onMapClick(e) {
     console.log('onMapClick', e.latlng.lat, e.latlng.lng);
 }
 
-async function loadData() {
-    let isModified;
-    const placesCount = placesStore.places.length;
-    
-    if (mapType.value === MAP_TYPES.EVENT)
-        await placesStore.loadAllWithEvents();
-    else 
-        await placesStore.loadAll(geohashesToLoad.value);
-    
-    loadedGeohashes.value.push(...geohashesToLoad.value);
-    geohashesToLoad.value = [];
-    isModified = placesCount !== placesStore.places.length;
-    
-    if (isModified) 
-        await loadMarkers();
-}
-
-async function loadMarkers() {
-    if (markerLayer.value) {
-        map.value.removeLayer(markerLayer.value);
-        markerLayer.value = null;
-    }
-    markerLayer.value = L.layerGroup().addTo(map.value);
-    
-    if (mapType.value === MAP_TYPES.EVENT) 
-        loadEventsMarkers();
-    else 
-        loadPlacesMarkers();
-    
-    scaleIcon();
-}
-
-function loadEventsMarkers() {
-    placesStore.places.forEach(place => {
-        let marker;
-
-        if (!eventTypes.value.includes(place.placeType.toString()))
-            return;
-
-        marker = getEventMarker(place);
-
-        marker.getPopup().on('remove', hidePopup);
-        marker.addTo(markerLayer.value);
-    });
-}
-
-function loadPlacesMarkers() {
-    placesStore.places.forEach(place => {
-        let marker;
-
-        if (!eventTypes.value.includes(place.placeType.toString()))
-            return;
-
-        marker = getPlaceMarker(place);
-
-        marker.getPopup().on('remove', hidePopup);
-        marker.addTo(markerLayer.value);
-    });
-}
-
-
-function getPlaceMarker(place) {
-    const latLng = [place.location.latitude, place.location.longitude];
-
-    const typeData = PLACE_TYPES_DATA[place.placeType];
-    const html = `
-            <div class="place-marker-content" style="background-color: ${typeData.markerColor}">
-                <i class="fa fa-${typeData.icon}"></i>
-            </div>
-            <div class="place-marker-label">${place.name}</div>`;
-
-    const overlay = L.divIcon({
-        className: 'place-marker',
-        html: html,
-        iconSize: [50, 50], 
-        iconAnchor: [25, 25] 
-    });
-
-    const marker = L.marker(latLng, { icon: overlay });
-
-    marker.bindPopup(`<div class="place-popup"></div>`, {
-        placeId: place.id,
-        autoClose: true,
-        autoPan: false,
-        closeButton: false,
-        keepInView: true,
-    });
-    marker.addTo(map.value);
-    marker.on('click', showPlacePopup);
-
-    return marker;
-}
-
-function getEventMarker(place) {
-    let marker;
-    const event = place.events[0];
-    const latLng = [place.location.latitude, place.location.longitude];
-    
-    const markerOptions = {
-        placeId: place.id,
-        autoClose: true,
-        autoPan: false,
-        closeButton: false,
-        keepInView: true,
-    };
-    
-    const typeData = EVENT_TYPES_DATA[event.eventType];
-    const icon = L.AwesomeMarkers.icon({
-        icon: typeData.icon,
-        markerColor: typeData.markerColor,
-        prefix: 'fa'
-    });
-    marker = L.marker(latLng, { icon: icon });
-    marker.bindPopup(`<div class="event-popup"></div>`, markerOptions);
-    marker.on('click', showEventPopup);
-    
-    return marker;
-}
-
-function scaleIcon() {
-    const zoom = map.value.getZoom(); 
-    const scale = Math.pow(0.9, 18 - zoom); 
-
-    document.querySelectorAll('.place-marker').forEach(function(marker) {
-        const content = marker.querySelector('.place-marker-content');
-        const label = marker.querySelector('.place-marker-label');
-        const newSize = 50 * scale; 
-        const newFontSize = 25 * scale; 
-        const newLabelFontSize = 15 * scale; 
-        const newLineHeight = 15 * scale;
-
-        content.style.width = newSize + 'px';
-        content.style.height = newSize + 'px';
-        content.style.fontSize = newFontSize + 'px';
-        
-        if (zoom < 14)
-            label.style.display = 'none';
-        else {
-            label.style.display = 'flex';
-            label.style.fontSize = newLabelFontSize + 'px';
-            label.style.lineHeight = newLineHeight + 'px';
-        }
-    });
-}
-
-
 onBeforeMount(async () => {
-    navigator.geolocation.getCurrentPosition((position) => {
-        center.value = [position.latitude, position.longitude];
-    });
+    await mapStore.initialize();
 });
 
 onMounted(async () => {
     initializeMap();
 
     await loadGeohashes();
-    
+
     setTimeout(() => scaleIcon(), 100);
 });
 </script>

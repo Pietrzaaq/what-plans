@@ -17,7 +17,6 @@ export const useFilterStore = defineStore(
         const _eventTypes = ref([]);
         const eventTypes = computed(() => _eventTypes.value);
 
-
         async function loadFilter() {
             const mapType = JSON.parse(localStorage.getItem('mapType'));
 

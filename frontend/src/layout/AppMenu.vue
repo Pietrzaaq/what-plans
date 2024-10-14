@@ -12,7 +12,6 @@ const { cities, city, isLoading } = storeToRefs(globalStore);
 
 const onCityUpdate = (value) => {
     globalStore.setCity(value);
-    globalStore.setCenter(value.latitude, value.longitude);
 };
 
 </script>
