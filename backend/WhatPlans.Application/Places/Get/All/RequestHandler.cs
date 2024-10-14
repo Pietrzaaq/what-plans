@@ -16,13 +16,7 @@ public class RequestHandler : IRequestHandler<Request, List<Place>>
     
     public async Task<List<Place>> Handle(Request request, CancellationToken cancellationToken)
     {
-        var geohashes = request.Geohashes;
-        List<Place> result;
-        
-        if (geohashes is null || geohashes.Count == 0)
-            result = await _mongoContext.Places.Find(p => true).ToListAsync(cancellationToken: cancellationToken);
-        else
-            result = await _mongoContext.Places.Find(p => geohashes.Any(g => p.Location.Geohash.Contains(g))).ToListAsync(cancellationToken: cancellationToken);
+        var result = await _mongoContext.Places.Find(p => true).ToListAsync(cancellationToken: cancellationToken);
 
         return result;
     }

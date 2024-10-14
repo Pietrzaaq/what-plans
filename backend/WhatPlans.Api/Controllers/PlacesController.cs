@@ -17,13 +17,14 @@ public class PlacesController : BaseController
     public Task<IActionResult> GetPlacesWithEvents(Application.Places.Get.AllWithEvents.Request request)
         => ExecuteAsync(request);
     
-    [HttpGet("{id}/events")]
-    public Task<IActionResult> GetPlaceByIdWithEvents(Application.Places.Get.ByIdWithEvents.Request request)
-        => ExecuteAsync(request);
-    
     [HttpGet("{id}")]
     public Task<IActionResult> GetPlaceById(Application.Places.Get.ById.Request request)
         => ExecuteAsync(request);
+    
+    [HttpGet("{id}/events")]
+    public Task<IActionResult> GetEventsByPlaceId(Application.Places.Get.ByIdWithEvents.Request request)
+        => ExecuteAsync(request);
+
     [HttpPost]
     public Task<IActionResult> Create(Application.Places.Create.Request request)
         => ExecuteAsync(request);

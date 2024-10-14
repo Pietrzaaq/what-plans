@@ -1,5 +1,5 @@
 ﻿import { ref } from "vue";
-import { usePlacesStore } from "@/stores/places.js";
+import { useMapStore } from "@/stores/map.js";
 
 export function usePopup() {
     const isPlacePopupVisible = ref(false);
@@ -8,7 +8,7 @@ export function usePopup() {
     const popupTargetObject = ref(null);
     const popup = ref(null);
 
-    const placesStore = usePlacesStore();
+    const mapStore = useMapStore();
 
     function showPlacePopup(event) {
         popup.value = event.target?._popup;
@@ -19,7 +19,7 @@ export function usePopup() {
         }
 
         const placeId = popup.value.options.placeId;
-        popupTargetObject.value = placesStore.places.find(p => p.id === placeId);
+        popupTargetObject.value = mapStore.data.find(p => p.id === placeId);
 
         teleportTo.value = document.querySelector(`.place-popup`);
         isPlacePopupVisible.value = true;
@@ -30,7 +30,7 @@ export function usePopup() {
         const placeId = popup.value.options.placeId;
 
         console.log(placeId);
-        popupTargetObject.value = placesStore.places.find(p => p.id === placeId);
+        popupTargetObject.value = mapStore.data.find(p => p.id === placeId);
 
         teleportTo.value = document.querySelector(`.event-popup`);
         isEventPopupVisible.value = true;

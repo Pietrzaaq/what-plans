@@ -5,8 +5,8 @@ import FavoriteButton from "@/components/shared/FavoriteButton.vue";
 import { useFavoritesStore } from "@/stores/favorites.js";
 import LongTextLink from "@/components/shared/LongTextLink.vue";
 import { FontAwesomeIcon } from "@fortawesome/vue-fontawesome";
-import eventsService from "@/services/eventsService.js";
 import EventItem from "@/components/map/popups/EventItem.vue";
+import placesService from "@/services/placesService.js";
 
 const emit = defineEmits(['addEvent']);
 const props = defineProps(['teleportTo', 'popupPlace']);
@@ -28,7 +28,7 @@ function addEvent() {
 }
 
 async function loadEvents() {
-    placeEvents.value = await eventsService.getAllForPlace(place.value.id);
+    placeEvents.value = await placesService.getEventsByPlaceId(place.value.id);
 }
 
 onMounted( async() => {

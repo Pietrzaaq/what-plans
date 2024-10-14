@@ -5,7 +5,7 @@ using WhatPlans.Domain.Entities;
 
 namespace WhatPlans.Application.Places.Get.ByIdWithEvents;
 
-public class Request : IRequest<PlaceWithEvents>
+public class Request : IRequest<List<Event>>
 {
     [FromRoute] 
     public ObjectId Id { get; set; }

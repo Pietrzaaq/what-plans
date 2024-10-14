@@ -6,15 +6,17 @@ export default new class PlacesService {
             params: {
                 geohashes: geohashes
             }
-        });
+        }).then(response => response.data);
     }
 
     async getAllWithEvents() {
-        return await axios.get(`https://localhost:5000/api/places/events`);
+        return await axios.get(`https://localhost:5000/api/places/events`)
+            .then(response => response.data);
     }
 
-    async getPlaceWithEvents(placeId) {
-        return await axios.get(`https://localhost:5000/api/places/${placeId}/events`);
+    async getEventsByPlaceId(placeId) {
+        return await axios.get(`https://localhost:5000/api/places/${placeId}/events`)
+            .then(response => response.data);
     }
 
     async create(place) {

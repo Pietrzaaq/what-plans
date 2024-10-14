@@ -5,7 +5,7 @@ using WhatPlans.Domain.Entities;
 
 namespace WhatPlans.Application.Places.Get.ByIdWithEvents;
 
-public class RequestHandler : IRequestHandler<Request, PlaceWithEvents>
+public class RequestHandler : IRequestHandler<Request, List<Event>>
 {
     private readonly IMongoContext _mongoContext;
 
@@ -14,20 +14,10 @@ public class RequestHandler : IRequestHandler<Request, PlaceWithEvents>
         _mongoContext = mongoContext;
     }
     
-    public async Task<PlaceWithEvents> Handle(Request request, CancellationToken cancellationToken)
+    public async Task<List<Event>> Handle(Request request, CancellationToken cancellationToken)
     {
-        var filter = Builders<Place>.Filter.Eq(p => p.Id, request.Id);
-        
-        var place = await _mongoContext.Places.Aggregate()
-            .Match(filter)
-            .Lookup<Place, Event, PlaceWithEvents>(
-                _mongoContext.Events,            
-                place => place.Id,              
-                eventItem => eventItem.PlaceId,  
-                placeWithEvents => placeWithEvents.Events 
-            )
-            .FirstOrDefaultAsync(cancellationToken: cancellationToken);
-        
-        return place;
+        var events = await _mongoContext.Events.Find(p => p.PlaceId == request.Id).ToListAsync(cancellationToken: cancellationToken);
+
+        return events;
     }
 }
