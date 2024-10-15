@@ -9,19 +9,25 @@ import 'leaflet.awesome-markers/dist/leaflet.awesome-markers.js';
 import Filter from "../components/map/Filter.vue";
 import { useGlobalStore } from "@/stores/global.js";
 import { storeToRefs } from "pinia";
-import { EVENT_TYPES_DATA } from "@/models/eventTypes.js";
 import EventPopup from "@/components/map/popups/EventPopup.vue";
 import PlacePopup from "@/components/map/popups/PlacePopup.vue";
-import { PLACE_TYPES_DATA } from "@/models/placeTypes.js";
 import { useFilterStore } from "@/stores/filter.js";
 import { MAP_TYPES } from "@/models/mapTypes.js";
 import geolocationService from "@/services/geolocationService.js";
 import { useMapStore } from "@/stores/map.js";
+import { useMarker } from "@/composables/map/marker.js";
 
-// FILTER
+// STORES
+const mapStore = useMapStore();
+const { map, zoom, center, currentGeohashes, loadedGeohashes, geohashesToLoad, geohashPrecision } = storeToRefs(mapStore);
+
 const filterStore = useFilterStore();
 const { mapType, eventTypes } = storeToRefs(filterStore);
 
+const globalStore = useGlobalStore();
+const { city } = storeToRefs(globalStore);
+
+// FILTER
 watch(mapType, async() => {
     mapStore.clear();
     await loadGeohashes();
@@ -32,13 +38,10 @@ watch(eventTypes, async() => {
 });
 
 // CITY
-const globalStore = useGlobalStore();
-const { city } = storeToRefs(globalStore);
-
 watch(city, (newValue, oldValue) => {
     if (newValue && oldValue) {
-        mapStore.clear();
         const center = [newValue.latitude, newValue.longitude];
+        mapStore.clear();
         mapStore.setCenter(center);
         map.value.setView(center, zoom.value);
     }
@@ -61,10 +64,12 @@ function openEventDialog(area) {
 }
 
 // POPUP
-const { teleportTo, isPlacePopupVisible, isEventPopupVisible, popupTargetObject, showPlacePopup, showEventPopup, hidePopup } = usePopup();
-
+const { teleportTo, isPlacePopupVisible, isEventPopupVisible, popupTargetObject, showPlacePopup, showEventPopup, hidePopup } = usePopup(map);
 
 // MARKERS
+const markerLayer = ref(null);
+const { loadCitiesCircles, loadPlacesMarkers, loadEventsMarkers } = useMarker(markerLayer, map, showPlacePopup, showEventPopup, hidePopup);
+
 async function loadMarkers() {
     if (markerLayer.value) {
         map.value.removeLayer(markerLayer.value);
@@ -80,101 +85,6 @@ async function loadMarkers() {
         loadPlacesMarkers();
 
     scaleIcon();
-}
-
-function loadCitiesCircles() {
-    console.log('loadCitiesCircles');
-    mapStore.data.forEach(city => {
-        const circle = L.circle([city.latitude, city.longitude], { radius: city.radius });
-
-        circle.addTo(markerLayer.value);
-    });
-}
-
-function loadEventsMarkers() {
-    mapStore.data.forEach(place => {
-        let marker;
-
-        if (!eventTypes.value.includes(place.placeType.toString()))
-            return;
-
-        marker = getEventMarker(place);
-
-        marker.getPopup().on('remove', hidePopup);
-        marker.addTo(markerLayer.value);
-    });
-}
-
-function loadPlacesMarkers() {
-    mapStore.data.forEach(place => {
-        let marker;
-
-        if (!eventTypes.value.includes(place.placeType.toString()))
-            return;
-
-        marker = getPlaceMarker(place);
-
-        marker.getPopup().on('remove', hidePopup);
-        marker.addTo(markerLayer.value);
-    });
-}
-
-function getPlaceMarker(place) {
-    const latLng = [place.location.latitude, place.location.longitude];
-
-    const typeData = PLACE_TYPES_DATA[place.placeType];
-    const html = `
-            <div class="place-marker-content" style="background-color: ${typeData.markerColor}">
-                <i class="fa fa-${typeData.icon}"></i>
-            </div>
-            <div class="place-marker-label">${place.name}</div>`;
-
-    const overlay = L.divIcon({
-        className: 'place-marker',
-        html: html,
-        iconSize: [50, 50],
-        iconAnchor: [25, 25]
-    });
-
-    const marker = L.marker(latLng, { icon: overlay });
-
-    marker.bindPopup(`<div class="place-popup"></div>`, {
-        placeId: place.id,
-        autoClose: true,
-        autoPan: false,
-        closeButton: false,
-        keepInView: true,
-    });
-    marker.addTo(map.value);
-    marker.on('click', showPlacePopup);
-
-    return marker;
-}
-
-function getEventMarker(place) {
-    let marker;
-    const event = place.events[0];
-    const latLng = [place.location.latitude, place.location.longitude];
-
-    const markerOptions = {
-        placeId: place.id,
-        autoClose: true,
-        autoPan: false,
-        closeButton: false,
-        keepInView: true,
-    };
-
-    const typeData = EVENT_TYPES_DATA[event.eventType];
-    const icon = L.AwesomeMarkers.icon({
-        icon: typeData.icon,
-        markerColor: typeData.markerColor,
-        prefix: 'fa'
-    });
-    marker = L.marker(latLng, { icon: icon });
-    marker.bindPopup(`<div class="event-popup"></div>`, markerOptions);
-    marker.on('click', showEventPopup);
-
-    return marker;
 }
 
 function scaleIcon() {
@@ -204,51 +114,6 @@ function scaleIcon() {
 }
 
 // MAP
-const mapStore = useMapStore();
-const { zoom, center, currentGeohashes, loadedGeohashes, geohashesToLoad, geohashPrecision } = storeToRefs(mapStore);
-const map = ref(null);
-const url = ref(`https://api.maptiler.com/maps/basic-v2/{z}/{x}/{y}.png?key=${import.meta.env.VITE_MAP_TILER_API_KEY}`);
-const markerLayer = ref(null);
-const tileLayer = ref(null);
-
-async function initializeMap() {
-    map.value = L.map('map', {
-        center: L.latLng(center.value[0], center.value[1]),
-        zoom: zoom.value,
-        doubleClickZoom: false,
-        zoomAnimation: false
-    });
-
-    map.value.on('load', onMapLoad);
-    map.value.on('moveend', OnMapChanged);
-    map.value.on('zoom', scaleIcon);
-    map.value.on('click', onMapClick);
-    map.value.on('unload', onMapUnload);
-
-    const mapTilerUrl = `https://api.maptiler.com/maps/basic-v2/{z}/{x}/{y}.png?key=${import.meta.env.VITE_MAP_TILER_API_KEY}`;
-    const openStreetMapUrl = 'https://tile.openstreetmap.org/{z}/{x}/{y}.png';
-
-    url.value = await checkTileProvider(mapTilerUrl) ? mapTilerUrl : openStreetMapUrl;
-
-    tileLayer.value = L.tileLayer(url.value, {
-        minZoom: 7,
-        maxZoom: 19,
-        closePopupOnClick: false,
-        attribution: '<span>Projekt wykonany w ramach pracy magisterkiej na Uniwersytecie Łódzkim</span> &copy; <a href="http://www.openstreetmap.org/copyright">OpenStreetMap</a>'
-    });
-    
-    tileLayer.value.addTo(map.value);
-}
-
-async function checkTileProvider(url) {
-    try {
-        const response = await fetch(url.replace('{z}', '0').replace('{x}', '0').replace('{y}', '0'));
-        return response.ok;
-    } catch (error) {
-        return false;
-    }
-}
-
 async function OnMapChanged() {
     const newZoomValue = map.value.getZoom();
     if (zoom.value !== newZoomValue) {
@@ -308,11 +173,16 @@ function onMapClick(e) {
 }
 
 onBeforeMount(async () => {
-    await mapStore.initialize();
 });
 
 onMounted(async () => {
-    await initializeMap();
+    await mapStore.initialize();
+    
+    map.value.on('load', onMapLoad);
+    map.value.on('moveend', OnMapChanged);
+    map.value.on('zoom', scaleIcon);
+    map.value.on('click', onMapClick);
+    map.value.on('unload', onMapUnload);
 
     await loadGeohashes();
 
