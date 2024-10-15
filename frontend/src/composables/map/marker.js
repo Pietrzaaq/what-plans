@@ -12,7 +12,10 @@ export function useMarker(markerLayer, map, showPlacePopup, showEventPopup, hide
     
     function loadCitiesCircles() {
         mapStore.data.forEach(city => {
-            const circle = L.circle([city.latitude, city.longitude], { radius: city.radius });
+            const circle = L.circle([city.latitude, city.longitude], { 
+                radius: city.radius,
+                className: 'city-circle'
+            });
 
             circle.addTo(markerLayer.value);
         });
@@ -51,7 +54,7 @@ export function useMarker(markerLayer, map, showPlacePopup, showEventPopup, hide
 
         const typeData = PLACE_TYPES_DATA[place.placeType];
         const html = `
-            <div class="place-marker-content" data-place-id="${place.id}" style="background-color: ${typeData.markerColor}">
+            <div class="place-marker-content" style="background-color: ${typeData.markerColor}">
                 <i class="fa fa-${typeData.icon}"></i>
             </div>
             <div class="place-marker-label">${place.name}</div>`;

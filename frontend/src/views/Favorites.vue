@@ -27,17 +27,18 @@ function formatDate(dateString) {
 
 function toggleFavoritePlace(placeId) {
     const isFavorite = favoritesStore.isPlaceFavorite(placeId);
-    favoritesStore.togglePlaceFavorite(placeId, isFavorite.value);
+    favoritesStore.togglePlaceFavorite(placeId, isFavorite);
 }
 
 function toggleFavoriteEvent(eventId) {
     const isFavorite = favoritesStore.isEventFavorite(eventId);
-    favoritesStore.toggleEventFavorite(eventId, isFavorite.value);
+    favoritesStore.toggleEventFavorite(eventId, isFavorite);
 }
 
 onMounted(() => {
     favoritesStore.loadAll();
     eventsStore.loadAll();
+    placesStore.loadAll();
 });
 
 </script>

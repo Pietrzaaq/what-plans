@@ -7,9 +7,7 @@ export const useEventsStore = defineStore(
     const _events = ref([]);
     const events = computed(() => _events.value);
     async function loadAll() {
-        const result = await eventsService.getAll();
-
-        _events.value = result.data;
+        _events.value = await eventsService.getAll();
     }
 
     return { 
