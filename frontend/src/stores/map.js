@@ -2,12 +2,18 @@
 import { defineStore } from "pinia";
 import { MAP_TYPES } from "@/models/mapTypes.js";
 import mapService from "@/services/mapService.js";
+import L from 'leaflet';
 
 const DEFAULT_COORDINATES = [51.769406790090855, 19.43750792680422];
 const DEFAULT_ZOOM = 13;
+const OPEN_STREET_MAP_TILE_URL = 'https://tile.openstreetmap.org/{z}/{x}/{y}.png';
+const MAP_TILER_TILE_URL = `https://api.maptiler.com/maps/basic-v2/{z}/{x}/{y}.png?key=${import.meta.env.VITE_MAP_TILER_API_KEY}`;
 
 export const useMapStore = defineStore(
     'map', () => {
+        const _map = ref(L.Map);
+        const _tileLayer = ref(L.TileLayer);
+        const _tileUrl = ref(OPEN_STREET_MAP_TILE_URL);
         const _center = ref(DEFAULT_COORDINATES);
         const _zoom = ref(DEFAULT_ZOOM);
         const _data = ref([]);
@@ -16,6 +22,9 @@ export const useMapStore = defineStore(
         const _geohashesToLoad = ref([]);
         const _geohashPrecision = ref(4);
         
+        const map = computed(() => _map.value);
+        const tileLayer = computed(() => _tileLayer.value);
+        const tileUrl = computed(() => _tileUrl.value);
         const center = computed(() => _center.value);
         const zoom = computed(() => _zoom.value);
         const data = computed(() => _data.value);
@@ -28,6 +37,27 @@ export const useMapStore = defineStore(
             navigator.geolocation.getCurrentPosition((position) => {
                 _center.value = [position.latitude, position.longitude];
             });
+
+            _map.value = L.map('map', {
+                center: L.latLng(center.value[0], center.value[1]),
+                zoom: zoom.value,
+                doubleClickZoom: false,
+                zoomAnimation: false
+            });
+
+            const isMapTilerValid = await checkTileProvider(MAP_TILER_TILE_URL);
+            if (isMapTilerValid) {
+                _tileUrl.value = MAP_TILER_TILE_URL;
+            }
+            
+            _tileLayer.value = L.tileLayer(_tileUrl.value, {
+                minZoom: 7,
+                maxZoom: 19,
+                closePopupOnClick: false,
+                attribution: '<span>Projekt wykonany w ramach pracy magisterkiej na Uniwersytecie Łódzkim</span> &copy; <a href="http://www.openstreetmap.org/copyright">OpenStreetMap</a>'
+            });
+
+            _tileLayer.value.addTo(map.value);
         }
         
         async function loadData(mapType) {
@@ -75,6 +105,9 @@ export const useMapStore = defineStore(
         }
 
         return {
+            map,
+            tileLayer,
+            tileUrl,
             center,
             zoom,
             data,
@@ -92,3 +125,12 @@ export const useMapStore = defineStore(
             setGeohashesToLoad
         };
     });
+
+async function checkTileProvider(url) {
+    try {
+        const response = await fetch(url.replace('{z}', '0').replace('{x}', '0').replace('{y}', '0'));
+        return response.ok;
+    } catch (error) {
+        return false;
+    }
+}

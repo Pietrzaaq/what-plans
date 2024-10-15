@@ -6,7 +6,7 @@ export default new class GeolocationService {
             return 5;
         else if (zoom > 11)
             return 4;
-        else if (zoom > 8)
+        else if (zoom > 7)
             return 3;
         else 
             return 2;

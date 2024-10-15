@@ -33,7 +33,6 @@ async function loadEvents() {
 
 onMounted( async() => {
     await loadEvents();
-    console.log('On popup mounted');
 });
 </script>
 
