@@ -9,6 +9,7 @@ import { useLayout } from '@/layout/composables/layout';
 import { useGlobalStore } from "../stores/global.js";
 import { useFavoritesStore } from "@/stores/favorites.js";
 import { useFilterStore } from "@/stores/filter.js";
+import { useCurrentUserStore } from "@/stores/currentUser.js";
 
 const { layoutConfig, layoutState, isSidebarActive } = useLayout();
 
@@ -64,6 +65,7 @@ const isOutsideClicked = (event) => {
 };
 
 const route = useRoute();
+const currentUserStore = useCurrentUserStore();
 
 const isMapRoute = computed(() => {
   console.log(route);
@@ -71,6 +73,11 @@ const isMapRoute = computed(() => {
 });
 
 onBeforeMount(() => {
+    const userToken = localStorage.getItem('userToken');
+    if (userToken) {
+        currentUserStore.setUser(userToken);
+    }
+    
     globalStore.initialize();
     filterStore.loadFilter();
     favoritesStore.loadAll();
@@ -95,6 +102,7 @@ onBeforeMount(() => {
         <app-config></app-config>
         <div class="layout-mask"></div>
     </div>
+    <Toast position="bottom-right"></Toast>
 </template>
 
 <style lang="scss" scoped></style>

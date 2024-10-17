@@ -16,7 +16,23 @@ function groupBy(list, keyGetter) {
     return map;
 }
 
+function getUserInitials(user) {
+    console.log(' getUserInitials', user);
+    if (!user) {
+        return '';
+    }
+    
+    if (user.firstName && user.lastName) {
+        return `${user.firstName.charAt(0)}${user.lastName.charAt(0)}`.toUpperCase();
+    } else if (user.userName) {
+        return user.userName.slice(0, 2).toUpperCase();
+    }
+    
+    return '';
+}
+
 export {
     getUniqueString,
-    groupBy
+    groupBy,
+    getUserInitials
 };

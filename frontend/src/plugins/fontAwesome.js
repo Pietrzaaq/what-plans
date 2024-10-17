@@ -26,7 +26,8 @@ import {
     faUtensils,
     faGlassCheers, 
     faClock,
-    faHouse
+    faHouse,
+    faCircleXmark
 } from '@fortawesome/free-solid-svg-icons';
 
 library.add(
@@ -55,7 +56,8 @@ library.add(
     faUtensils,
     faGlassCheers, 
     faClock,
-    faHouse);
+    faHouse,
+    faCircleXmark);
 
 export function initFontAwesome(app) {
     app.component('font-awesome-icon', FontAwesomeIcon);

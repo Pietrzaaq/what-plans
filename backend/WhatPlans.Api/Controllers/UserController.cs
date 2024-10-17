@@ -59,7 +59,7 @@ public class UserController : BaseController
     [HttpPost("login")]
     public async Task<IActionResult> Login(Application.Users.Login.Request request)
     {
-        var user = await _mongoContext.Users.Find(x => x.UserName == request.Body.Username).FirstOrDefaultAsync();
+        var user = await _mongoContext.Users.Find(x => x.Email == request.Body.Email).FirstOrDefaultAsync();
         if (user == null)
         {
             throw new CredentialsException();

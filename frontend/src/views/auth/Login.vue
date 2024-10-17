@@ -1,16 +1,44 @@
 <script setup>
 import { useLayout } from '@/layout/composables/layout';
 import { ref, computed } from 'vue';
-import AppConfig from '@/layout/AppConfig.vue';
+import usersService from "@/services/usersService.js";
+import { useToast } from "primevue/usetoast";
+import { useRouter } from "vue-router";
+import { useCurrentUserStore } from "@/stores/currentUser.js";
 
 const { layoutConfig } = useLayout();
+const toast = useToast();
+const router = useRouter();
+const currentUserStore = useCurrentUserStore();
+
 const email = ref('');
 const password = ref('');
 const checked = ref(false);
 
 const logoUrl = computed(() => {
-    return `layout/images/logo.png`;
+    return `../../public/layout/images/logo.png`;
 });
+
+async function login() {
+    const request = {
+        email: email.value,
+        password: password.value,
+    };
+
+    console.log('before request', request);
+    try {
+        const token = await usersService.login(request);
+        localStorage.setItem('userToken', token.toString());
+
+        await currentUserStore.setUser(token);
+        
+        toast.add({ severity: 'success', summary: 'Login', detail: 'Logged successfully', life: 1000 });
+        await router.replace('/');
+        
+    } catch (e) {
+        toast.add({ severity: 'error', summary: 'Login', detail: 'Invalid credentials', life: 1000 });
+    }
+}
 </script>
 
 <template>
@@ -37,13 +65,13 @@ const logoUrl = computed(() => {
                             </div>
                             <a class="font-medium no-underline ml-2 text-right cursor-pointer" style="color: var(--primary-color)">Forgot password?</a>
                         </div>
-                        <Button label="Sign In" class="w-full p-3 text-xl"></Button>
+                        <Button label="Sign In" class="w-full p-3 text-xl" @click="login"></Button>
                     </div>
                 </div>
             </div>
         </div>
+        <Toast />
     </div>
-    <AppConfig simple />
 </template>
 
 <style scoped>
