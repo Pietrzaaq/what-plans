@@ -1,5 +1,5 @@
 ﻿<script setup>
-import { onBeforeMount, onMounted, ref, watch } from 'vue';
+import { onBeforeMount, onBeforeUnmount, onMounted, ref, watch } from 'vue';
 import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
 import { usePopup } from "../composables/map/popup";
@@ -188,11 +188,15 @@ onMounted(async () => {
 
     setTimeout(() => scaleIcon(), 100);
 });
+
+onBeforeUnmount(() => {
+    mapStore.destroy();
+});
 </script>
 
 <template>
     <main style="width: 100vw; height: 100vh">
-        <div id="map" style="height: 100%" @load="onMapLoad"></div>
+        <div id="map" style="height: 100%"></div>
     </main>
     <Filter></Filter>
     <PlacePopup

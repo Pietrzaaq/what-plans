@@ -39,8 +39,8 @@ export const useMapStore = defineStore(
             });
 
             _map.value = L.map('map', {
-                center: L.latLng(center.value[0], center.value[1]),
-                zoom: zoom.value,
+                center: _center.value,
+                zoom: _zoom.value,
                 doubleClickZoom: false,
                 zoomAnimation: false
             });
@@ -84,6 +84,12 @@ export const useMapStore = defineStore(
             _geohashesToLoad.value = [];
         }
 
+        function destroy() {
+            _map.value.remove();
+            _center.value = DEFAULT_COORDINATES;
+            clear();
+        }
+
         function setCenter(center) {
             _center.value = center;
         }
@@ -116,6 +122,7 @@ export const useMapStore = defineStore(
             geohashesToLoad,
             geohashPrecision,
             initialize,
+            destroy,
             loadData,
             clear,
             setCenter,
