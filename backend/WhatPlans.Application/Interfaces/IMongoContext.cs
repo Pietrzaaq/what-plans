@@ -11,4 +11,5 @@ public interface IMongoContext
     IMongoCollection<Event> Events { get; }
     IMongoCollection<Location> Locations { get; }
     IMongoCollection<City> Cities { get; }
+    IMongoCollection<User> Users { get; }
 }

@@ -1,3 +1,5 @@
+using AspNetCore.Identity.Mongo.Model;
+using Microsoft.AspNetCore.Identity;
 using WhatPlans.Api;
 using WhatPlans.Application;
 using WhatPlans.Infrastructure;
@@ -19,12 +21,15 @@ var builder = WebApplication.CreateBuilder(args);
     });
 
     builder.Services.AddEndpointsApiExplorer();
-    builder.Services.AddSwaggerGen();
+    builder.Services.AddSwaggerGen(c =>
+    {
+        c.CustomSchemaIds(type => type.FullName);
+    });
 
     builder.Services
         .AddApplication()
         .AddInfrastructure(builder.Configuration)
-        .AddPresentation();
+        .AddPresentation(builder.Configuration);
 }
 
 var app = builder.Build();
@@ -36,9 +41,26 @@ var app = builder.Build();
     }
 
     app.UseHttpsRedirection();
-    app.MapControllers();
+    app.UseAuthentication();
+    app.UseAuthorization();
     app.UseHttpsRedirection();
     app.UseCors(allowOrigins);
+    app.MapControllers();
+
+    app.MapPost("/roles", async (RoleManager<MongoRole> roleManager) =>
+    {
+        var roles = new[] { "Standard", "Organizer", "Admin" };
+
+        foreach (var role in roles)
+        {
+            if (!await roleManager.RoleExistsAsync(role))
+            {
+                await roleManager.CreateAsync(new MongoRole(role));
+            }
+        }
+
+        return Results.Ok("Roles created successfully.");
+    });
 
     app.Run();
 }
