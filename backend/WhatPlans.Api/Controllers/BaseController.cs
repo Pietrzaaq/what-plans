@@ -1,7 +1,9 @@
 ﻿using System.Net;
 using FluentValidation;
 using MediatR;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
+using WhatPlans.Domain.Exceptions;
 
 namespace WhatPlans.Api.Controllers;
 
@@ -27,6 +29,10 @@ public class BaseController : ControllerBase
 
             return Ok(result);
         }
+        catch (IdentityException e)
+        {
+            return BadRequest(e.Errors);
+        }
         catch (ValidationException e)
         {
             return BadRequest(e.Errors);
@@ -34,9 +40,6 @@ public class BaseController : ControllerBase
         catch (Exception e)
         {
             return StatusCode((int)HttpStatusCode.InternalServerError, e.Message);
-        }
-        finally
-        {
         }
     }
 }

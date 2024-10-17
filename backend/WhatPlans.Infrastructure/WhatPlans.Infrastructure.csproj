@@ -12,12 +12,16 @@
 
     <ItemGroup>
       <PackageReference Include="MediatR" Version="12.4.1" />
+      <PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="8.0.10" />
       <PackageReference Include="Microsoft.Extensions.Hosting.Abstractions" Version="8.0.0" />
+      <PackageReference Include="Microsoft.IdentityModel.Tokens" Version="8.1.2" />
       <PackageReference Include="Newtonsoft.Json" Version="13.0.3" />
+      <PackageReference Include="Scrutor" Version="5.0.1" />
+      <PackageReference Include="System.IdentityModel.Tokens.Jwt" Version="8.1.2" />
     </ItemGroup>
 
     <ItemGroup>
-      <Folder Include="Serializers\" />
+      <Folder Include="Services\" />
     </ItemGroup>
 
 </Project>
