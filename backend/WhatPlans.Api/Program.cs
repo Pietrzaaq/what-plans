@@ -47,21 +47,6 @@ var app = builder.Build();
     app.UseCors(allowOrigins);
     app.MapControllers();
 
-    app.MapPost("/roles", async (RoleManager<MongoRole> roleManager) =>
-    {
-        var roles = new[] { "Standard", "Organizer", "Admin" };
-
-        foreach (var role in roles)
-        {
-            if (!await roleManager.RoleExistsAsync(role))
-            {
-                await roleManager.CreateAsync(new MongoRole(role));
-            }
-        }
-
-        return Results.Ok("Roles created successfully.");
-    });
-
     app.Run();
 }
 
