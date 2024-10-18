@@ -2,7 +2,7 @@
 export default new class MapService {
 
     async getPlaces(geohashes) {
-        return await axios.get('https://localhost:5000/api/map/places', {
+        return await axios.get(`${import.meta.env.VITE_API_BASE_URL}/map/places`, {
             params: {
                 geohashes: geohashes
             }
@@ -10,7 +10,7 @@ export default new class MapService {
     }
 
     async getEvents(geohashes) {
-        return await axios.get('https://localhost:5000/api/map/events', {
+        return await axios.get(`${import.meta.env.VITE_API_BASE_URL}/map/events`, {
             params: {
                 geohashes: geohashes
             }
@@ -18,7 +18,7 @@ export default new class MapService {
     }
 
     async getCities(geohashes) {
-        return await axios.get('https://localhost:5000/api/map/cities', {
+        return await axios.get(`${import.meta.env.VITE_API_BASE_URL}/map/cities`, {
             params: {
                 geohashes: geohashes
             }
