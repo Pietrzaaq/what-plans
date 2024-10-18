@@ -8,15 +8,23 @@ var allowOrigins = "AllowOrigins";
 
 var builder = WebApplication.CreateBuilder(args);
 {
+    var origins = new List<string>();
+    var origin = builder.Configuration["Cors:Origin"];
+
+    if (string.IsNullOrWhiteSpace(origin))
+        throw new Exception("Origin is not defined");
+    
+    origins.Add(origin);
+    
     builder.Services.AddCors(options =>
     {
         options.AddPolicy(name: allowOrigins,
             policy  =>
             {
-                policy.WithOrigins()
-                    .AllowAnyHeader()
+                policy.WithOrigins(origins.ToArray())
                     .AllowAnyMethod()
-                    .AllowAnyOrigin();
+                    .AllowCredentials()
+                    .AllowAnyHeader();
             });
     });
 
