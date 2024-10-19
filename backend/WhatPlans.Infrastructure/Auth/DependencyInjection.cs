@@ -27,7 +27,7 @@ public static class DependencyInjection
             },
             mongoIdentityOptions =>
             {
-                mongoIdentityOptions.ConnectionString = $"{connectionString}/{database}";
+                mongoIdentityOptions.ConnectionString = $"{connectionString}/{database}/?authSource={database}";
             });
         
         var issuer = configuration.GetSection("Authorization:Issuer").Value;
