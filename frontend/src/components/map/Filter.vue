@@ -46,12 +46,12 @@ onMounted(() => {
 </script>
 
 <template>
-    <Accordion :activeIndex="0" class="map-filter flex flex-column gap-2 absolute">
+    <Accordion class="map-filter flex flex-column gap-2 absolute ">
         <AccordionTab>
             <template #header>
                 <div class="flex flex-wrap align-items-center gap-2">
                     <FontAwesomeIcon icon="fas fa-filter" size="lg"></FontAwesomeIcon>
-                    <span>Filters</span>
+                    <span class="font-medium">Filters</span>
                     <SelectButton
                         v-model="selectedMapTypes"
                         :options="mapTypeOptions"
@@ -108,15 +108,23 @@ onMounted(() => {
 .map-filter {
     z-index: 400;
     width: 400px;
-    top: 100px;
+    top: 6rem;
     left: 350px;
-    border-radius: 10px
 }
 
 @media (max-width: 990px) {
     .map-filter {
-        left: 50px;
+        left: 1rem;
         max-width: 15rem;
     }
+}
+
+.map-filter .p-accordion-tab {
+    overflow: hidden;
+    border-radius: 1rem;
+}
+
+.map-filter .p-accordion-tab .p-accordion-header .p-accordion-header-link {
+    padding: 0.75rem 1rem;
 }
 </style>

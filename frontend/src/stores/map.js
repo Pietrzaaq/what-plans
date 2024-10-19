@@ -42,7 +42,7 @@ export const useMapStore = defineStore(
                 center: _center.value,
                 zoom: _zoom.value,
                 doubleClickZoom: false,
-                zoomAnimation: false
+                zoomAnimation: true
             });
 
             const isMapTilerValid = await checkTileProvider(MAP_TILER_TILE_URL);

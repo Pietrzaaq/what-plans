@@ -16,7 +16,7 @@ const password = ref('');
 const checked = ref(false);
 
 const logoUrl = computed(() => {
-    return `../../public/layout/images/logo.png`;
+    return `../../public/layout/images/logo-purple-gradient.png`;
 });
 
 async function login() {

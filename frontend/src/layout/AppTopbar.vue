@@ -25,7 +25,7 @@ watch(user, () => {
 });
 
 const logoUrl = computed(() => {
-    return `layout/images/logo.png`;
+    return `layout/images/logo-purple-dark.png`;
 });
 
 const onTopBarMenuButton = () => {
@@ -116,7 +116,7 @@ onBeforeUnmount(() => {
             <i class="pi pi-bars"></i>
         </button>
 
-        <div class="p-fluid pl-2 w-4">
+        <div class="layout-topbar-search p-fluid pl-2 w-4">
             <auto-complete style="display:flex; width: 100%" placeholder="Search for events..."></auto-complete>
         </div>
 

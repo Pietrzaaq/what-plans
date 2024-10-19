@@ -91,18 +91,23 @@
 
         .layout-topbar-logo {
             width: auto;
+            order: 1;
+            font-size: 1rem;
+        }
+        
+        .layout-topbar-search {
             order: 2;
         }
 
         .layout-menu-button {
             margin-left: 0;
-            order: 1;
+            order: 3;
         }
 
         .layout-topbar-menu-button {
             display: inline-flex;
             margin-left: 0;
-            order: 3;
+            order: 4;
         }
 
         .layout-topbar-menu {

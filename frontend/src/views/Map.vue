@@ -235,7 +235,6 @@ onBeforeUnmount(() => {
     border: 3px solid var(--gray-500);
     font-size: 25px;
     color: white;
-    transition: width 100ms, height 100ms, font-size 50ms;
 }
 
 .place-marker:hover .place-marker-content {
@@ -258,7 +257,6 @@ onBeforeUnmount(() => {
     font-weight: 500;
     line-height: 20px;
     text-shadow: 1px 1px 1px var(--gray-200);
-    transition: font-size 100ms;
 }
 </style>
 

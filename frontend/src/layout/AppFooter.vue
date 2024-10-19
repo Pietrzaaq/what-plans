@@ -5,7 +5,7 @@ import { computed } from 'vue';
 const { layoutConfig } = useLayout();
 
 const logoUrl = computed(() => {
-    return `layout/images/logo.png`;
+    return `layout/images/logo-purple-dark.png`;
 });
 </script>
 
