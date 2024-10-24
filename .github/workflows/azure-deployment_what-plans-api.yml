@@ -22,10 +22,10 @@ jobs:
           dotnet-version: '8.x'
 
       - name: Build with dotnet
-        run: dotnet build backend/WhatPlans.Api/WhatPlans.Api.csproj --configuration Release
+        run: dotnet build --configuration Release
 
       - name: dotnet publish
-        run: "dotnet publish backend/WhatPlans.Api/WhatPlans.Api.csproj -c Release -o '${{env.DOTNET_ROOT}}/myapp'"
+        run: dotnet publish -c Release -o ${{env.DOTNET_ROOT}}/myapp
 
       - name: Upload artifact for deployment job
         uses: actions/upload-artifact@v4
@@ -39,13 +39,22 @@ jobs:
     environment:
       name: 'Production'
       url: ${{ steps.deploy-to-webapp.outputs.webapp-url }}
-    
+    permissions:
+      id-token: write #This is required for requesting the JWT
+
     steps:
       - name: Download artifact from build job
         uses: actions/download-artifact@v4
         with:
           name: .net-app
       
+      - name: Login to Azure
+        uses: azure/login@v2
+        with:
+          client-id: ${{ secrets.AZUREAPPSERVICE_CLIENTID_8C56E8704C4B46BC87D4F9FBCA0A3F87 }}
+          tenant-id: ${{ secrets.AZUREAPPSERVICE_TENANTID_330A32B14DFE4DBF907BCA6EBCEC8230 }}
+          subscription-id: ${{ secrets.AZUREAPPSERVICE_SUBSCRIPTIONID_3636F189386C4F569CA741E067D0EEFF }}
+
       - name: Deploy to Azure Web App
         id: deploy-to-webapp
         uses: azure/webapps-deploy@v3
@@ -53,4 +62,4 @@ jobs:
           app-name: 'what-plans-api'
           slot-name: 'Production'
           package: .
-          publish-profile: ${{ secrets.AZUREAPPSERVICE_PUBLISHPROFILE_C03B0AD192CF45539099A607E69CCE8B }}
+          
