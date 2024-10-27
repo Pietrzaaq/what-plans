@@ -13,10 +13,9 @@ const currentUserStore = useCurrentUserStore();
 
 const email = ref('');
 const password = ref('');
-const checked = ref(false);
 
 const logoUrl = computed(() => {
-    return `../../public/layout/images/logo-purple-gradient.png`;
+    return `../../public/layout/images/logo-purple-dark.png`;
 });
 
 async function login() {
@@ -25,7 +24,6 @@ async function login() {
         password: password.value,
     };
 
-    console.log('before request', request);
     try {
         const token = await usersService.login(request);
         localStorage.setItem('userToken', token.toString());
@@ -42,8 +40,8 @@ async function login() {
 </script>
 
 <template>
-    <div class="surface-ground flex align-items-center justify-content-center min-h-screen min-w-screen overflow-hidden">
-        <div class="flex flex-column align-items-center justify-content-center">
+    <div class="surface-ground flex align-items-center justify-content-center min-h-screen overflow-hidden">
+        <div class="flex flex-column align-items-center justify-content-center py-6">
             <img :src="logoUrl" alt="WhatPlans logo" class="mb-5 w-6rem flex-shrink-0" />
             <div style="border-radius: 56px; padding: 0.3rem; background: linear-gradient(180deg, var(--primary-color) 10%, rgba(33, 150, 243, 0) 30%)">
                 <div class="w-full surface-card py-8 px-5 sm:px-8" style="border-radius: 53px">
@@ -58,14 +56,16 @@ async function login() {
                         <label for="password1" class="block text-900 font-medium text-xl mb-2">Password</label>
                         <Password id="password1" v-model="password" placeholder="Password" :toggleMask="true" class="w-full mb-3" inputClass="w-full" :inputStyle="{ padding: '1rem' }"></Password>
 
-                        <div class="flex align-items-center justify-content-between mb-5 gap-5">
-                            <div class="flex align-items-center">
-                                <Checkbox v-model="checked" id="rememberme1" binary class="mr-2"></Checkbox>
-                                <label for="rememberme1">Remember me</label>
-                            </div>
+                        <div class="flex align-items-center justify-content-end mb-5 gap-5">
                             <a class="font-medium no-underline ml-2 text-right cursor-pointer" style="color: var(--primary-color)">Forgot password?</a>
                         </div>
-                        <Button label="Sign In" class="w-full p-3 text-xl" @click="login"></Button>
+                        <Button label="Sign In" class="w-full p-3 mb-3 text-xl" @click="login"></Button>
+                        <div class="flex align-items-center justify-content-center text-gray-700">
+                            Doesn't have an account?
+                            <RouterLink to="auth/register" :replace="true">
+                                <a class="font-medium no-underline ml-2 text-right cursor-pointer" style="color: var(--primary-color)">Register</a>
+                            </RouterLink>
+                        </div>
                     </div>
                 </div>
             </div>

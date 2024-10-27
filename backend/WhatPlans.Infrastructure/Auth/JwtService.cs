@@ -2,6 +2,7 @@
 using System.Security.Claims;
 using System.Text;
 using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.IdentityModel.Tokens;
 using WhatPlans.Application.Interfaces;
 using WhatPlans.Domain.Entities;
@@ -12,10 +13,12 @@ namespace WhatPlans.Infrastructure.Auth;
 public class JwtService : IJwtService
 {
     private readonly IConfiguration _configuration;
+    private readonly IServiceProvider _services;
 
-    public JwtService(IConfiguration configuration)
+    public JwtService(IConfiguration configuration, IServiceProvider services)
     {
         _configuration = configuration;
+        _services = services;
     }
 
     public string GenerateToken(User user)
@@ -29,12 +32,15 @@ public class JwtService : IJwtService
         if (key == null)
             throw new ApplicationException("Secret key configuration section doesn't exist.");
 
+        using var scope = _services.CreateScope();
+        var dateTimeProvider = scope.ServiceProvider.GetRequiredService<IDateTimeProvider>();
+            
         var secret = Encoding.UTF8.GetBytes(key);
         var signingCredentials =
             new SigningCredentials(new SymmetricSecurityKey(secret), SecurityAlgorithms.HmacSha256);
         var issuer = jwtSettings["Issuer"];
         var audience = jwtSettings["Audience"];
-        var now = DateTime.UtcNow;
+        var now = dateTimeProvider.UtcNow;
         var expires= now.AddDays(7);
 
         UserAccount role;

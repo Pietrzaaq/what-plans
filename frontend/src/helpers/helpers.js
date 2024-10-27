@@ -1,4 +1,10 @@
-﻿function getUniqueString() {
+﻿import moment from "moment";
+
+function getApiDateTime(date) {
+    return moment(date).format('YYYY-MM-DDTHH:mm:ss');
+}
+
+function getUniqueString() {
     return '_' + Math.random().toString(36).substr(2, 9);
 }
 
@@ -32,6 +38,7 @@ function getUserInitials(user) {
 }
 
 export {
+    getApiDateTime,
     getUniqueString,
     groupBy,
     getUserInitials

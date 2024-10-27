@@ -15,14 +15,15 @@ public class UserController : BaseController
     private readonly IMongoContext _mongoContext;
     private readonly IUserManager _userManager;
     private readonly IJwtService _jwtService;
+    private readonly IDateTimeProvider _dateTimeProvider;
 
-
-    public UserController(IMediator mediator, IMongoContext mongoContext, IUserManager userManager, IJwtService jwtService)
+    public UserController(IMediator mediator, IMongoContext mongoContext, IUserManager userManager, IJwtService jwtService, IDateTimeProvider dateTimeProvider)
         : base(mediator)
     {
         _mongoContext = mongoContext;
         _userManager = userManager;
         _jwtService = jwtService;
+        _dateTimeProvider = dateTimeProvider;
     }
 
     [HttpPost("register")]
@@ -34,10 +35,10 @@ public class UserController : BaseController
             FirstName = request.Body.FirstName,
             LastName = request.Body.LastName,
             Email = request.Body.Email,
-            BirthDate = request.Body.BirthDate,
+            BirthDate = DateOnly.FromDateTime(request.Body.BirthDate),
             IsAdmin = false,
             Culture = request.Body.Culture,
-            RegisterDate = new DateTime()
+            RegisterDate = _dateTimeProvider.UtcNow
         };
 
         if (await _userManager.FindByEmailAsync(request.Body.Email) is not null)
