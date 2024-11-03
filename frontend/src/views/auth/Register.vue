@@ -36,7 +36,7 @@ async function register() {
     try {
         await usersService.register(request);
         toast.add({ severity: 'success', summary: 'Register', detail: 'Registration successful', life: 1000 });
-        await router.replace('auth/login');
+        await router.replace('login');
     } catch (e) {
         toast.add({ severity: 'error', summary: 'Register', detail: 'Registration failed', life: 1000 });
     }

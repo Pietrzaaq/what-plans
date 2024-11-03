@@ -73,11 +73,13 @@ const setUserItems = () => {
             {
                 label: 'Information',
                 icon: 'fa fa-circle-info',
+                iconColor: 'var(--blue-500)',
                 route: '/users/me'
             },
             {
                 label: 'Logout',
                 icon: 'fa fa-circle-xmark',
+                iconColor: 'var(--red-500)',
                 command: () => {
                     currentUserStore.logout();
                     toast.add({ severity: 'success', summary: 'Success', detail: 'User logged out successfully', life: 2000 });
@@ -150,12 +152,12 @@ onBeforeUnmount(() => {
                 <template #item="{ item, props }">
                     <router-link v-if="item.route" v-slot="{ href, navigate }" :to="item.route" custom>
                         <a v-ripple :href="href" v-bind="props.action" @click="navigate">
-                            <span :class="item.icon" />
+                            <span :class="item.icon" :style="`color: ${item.iconColor}`" />
                             <span class="ml-2">{{ item.label }}</span>
                         </a>
                     </router-link>
                     <a v-else v-ripple :href="item.url" :target="item.target" v-bind="props.action">
-                        <span :class="item.icon" />
+                        <span :class="item.icon" :style="`color: ${item.iconColor}`" />
                         <span class="ml-2">{{ item.label }}</span>
                     </a>
                 </template>

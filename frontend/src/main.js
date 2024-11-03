@@ -10,17 +10,18 @@ import '@fortawesome/fontawesome-free/css/all.css';
 import { createPinia } from "pinia";
 import LongText from "@/components/shared/LongText.vue";
 import { initPrimeVue } from "@/plugins/primeVue.js";
+import { initLeaflet } from "@/plugins/leaflet.js";
 
 const app = createApp(App);
-
 const pinia = createPinia();
-app.use(pinia);
 
+app.use(pinia);
 app.use(router);
 
 initPrimeVue(app);
 initFontAwesome(app);
-
-app.mount('#app');
+initLeaflet();
 
 app.component('LongText', LongText);
+
+app.mount('#app');
