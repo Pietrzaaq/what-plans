@@ -23,7 +23,6 @@ function groupBy(list, keyGetter) {
 }
 
 function getUserInitials(user) {
-    console.log(' getUserInitials', user);
     if (!user) {
         return '';
     }

@@ -109,7 +109,7 @@ onMounted(() => {
     z-index: 400;
     width: 400px;
     top: 6rem;
-    left: 350px;
+    left: 250px;
 }
 
 @media (max-width: 990px) {

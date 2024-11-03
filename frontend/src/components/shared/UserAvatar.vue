@@ -24,7 +24,6 @@ const user = ref(new UserLight);
 const userInitials = computed(() => getUserInitials(user.value));
 
 const setUser = async () => {
-    console.log('inside set user', props.user);
     if (props.user)
         user.value = props.user;
 };
