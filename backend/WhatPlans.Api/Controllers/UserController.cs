@@ -98,9 +98,28 @@ public class UserController : BaseController
             Culture = user.Culture,
             LastVisitDate = user.LastVisitDate,
             IsAdmin = user.IsAdmin,
-            IsOrganizer = user.IsOrganizer
+            IsOrganizer = user.IsOrganizer,
+            AvatarUrl = user.AvatarUrl
         };
 
         return Ok(response);
+    }
+
+    [HttpGet("{id}")]
+    public async Task<IActionResult> GetUserById(Application.Users.Get.ById.Request request)
+    {
+        var user = await _mongoContext.Users.Find(u => u.Id == request.Id).FirstAsync();
+
+        var userDto = new UserLightDto()
+        {
+            Username = user.UserName,
+            FirstName = user.FirstName,
+            LastName = user.LastName,
+            IsAdmin = user.IsAdmin,
+            IsOrganizer = user.IsOrganizer,
+            AvatarUrl = user.AvatarUrl,
+        };
+        
+        return Ok(userDto);
     }
 }

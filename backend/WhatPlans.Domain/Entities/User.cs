@@ -12,6 +12,7 @@ public class User : MongoUser
     public bool IsOrganizer { get; set; }
     public DateTime RegisterDate { get; set; } 
     public DateTime LastVisitDate { get; set; } 
+    public string AvatarUrl { get; set; }
 }
 
 public class UserDto
@@ -25,4 +26,15 @@ public class UserDto
     public bool IsOrganizer { get; set; }
     public DateTime RegisterDate { get; set; } 
     public DateTime LastVisitDate { get; set; } 
+    public string AvatarUrl { get; set; }
+}
+
+public class UserLightDto
+{
+    public string Username { get; set; }
+    public string FirstName { get; set; }
+    public string LastName { get; set; }
+    public bool IsAdmin { get; set; }
+    public bool IsOrganizer { get; set; }
+    public string AvatarUrl { get; set; }
 }

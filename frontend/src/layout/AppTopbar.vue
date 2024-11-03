@@ -3,16 +3,15 @@ import { computed, onBeforeUnmount, onMounted, ref, watch } from 'vue';
 import { useLayout } from '@/layout/composables/layout';
 import { useCurrentUserStore } from "@/stores/currentUser.js";
 import { storeToRefs } from "pinia";
-import { getUserInitials } from "@/helpers/helpers.js";
 import { useToast } from "primevue/usetoast";
 import { useRouter } from "vue-router";
+import UserAvatar from "@/components/shared/UserAvatar.vue";
 
 const { onMenuToggle } = useLayout();
 const router = useRouter();
 const toast = useToast();
 const currentUserStore = useCurrentUserStore();
 const { user } = storeToRefs(currentUserStore);
-const userInitials = computed(() => getUserInitials(user.value));
 
 const outsideClickListener = ref(null);
 const topbarMenuActive = ref(false);
@@ -33,9 +32,7 @@ const onTopBarMenuButton = () => {
 };
 
 const topbarMenuClasses = computed(() => {
-    return {
-        'layout-topbar-menu-mobile-active': topbarMenuActive.value
-    };
+    return topbarMenuActive.value ? 'layout-topbar-menu-mobile-active' : 'layout-topbar-menu-hidden'; 
 });
 
 const bindOutsideClickListener = () => {
@@ -50,7 +47,7 @@ const bindOutsideClickListener = () => {
 };
 const unbindOutsideClickListener = () => {
     if (outsideClickListener.value) {
-        document.removeEventListener('click', outsideClickListener);
+        document.removeEventListener('click', outsideClickListener.value);
         outsideClickListener.value = null;
     }
 };
@@ -74,7 +71,7 @@ const setUserItems = () => {
                 label: 'Information',
                 icon: 'fa fa-circle-info',
                 iconColor: 'var(--blue-500)',
-                route: '/users/me'
+                route: '/me'
             },
             {
                 label: 'Logout',
@@ -83,6 +80,10 @@ const setUserItems = () => {
                 command: () => {
                     currentUserStore.logout();
                     toast.add({ severity: 'success', summary: 'Success', detail: 'User logged out successfully', life: 2000 });
+                    
+                    setTimeout(() => {
+                        window.location.reload();
+                    }, 200);
                 }
             }
         ];
@@ -114,7 +115,7 @@ onBeforeUnmount(() => {
             <span>What Plans</span>
         </router-link>
 
-        <button class="p-link layout-menu-button layout-topbar-button" @click="onMenuToggle()">
+        <button class="p-link layout-menu-button layout-topbar-button" @click="onMenuToggle">
             <i class="pi pi-bars"></i>
         </button>
 
@@ -127,7 +128,7 @@ onBeforeUnmount(() => {
         </button>
 
         <div class="layout-topbar-menu flex align-items-center" :class="topbarMenuClasses">
-            <button @click="onTopBarMenuButton()" class="p-link layout-topbar-button">
+            <button class="p-link layout-topbar-button">
                 <i class="pi pi-calendar"></i>
                 <span>Calendar</span>
             </button>
@@ -138,17 +139,18 @@ onBeforeUnmount(() => {
                 text
                 rounded
                 @click="toggle">
-                <Avatar
-                    shape="circle" 
-                    :label="userInitials"
-                    class="font-medium"
-                    style="background-color: var(--primary-300); color: var(--primary-color-text)"></Avatar>
+                <UserAvatar :user="user"></UserAvatar>
             </Button>
             <div v-else class="flex gap-2 ml-2">
                 <Button label="Log in" @click="login" outlined></Button>
                 <Button label="Sign up" @click="register"></Button>
             </div>
-            <Menu ref="menu" :model="userMenuItems" :popup="true">
+            <Menu ref="menu" :model="userMenuItems" :popup="true" style="border-top: 40px solid var(--primary-color)">
+                <template #start>
+                    <div class="font-bold text-xl text-white text-center" style="margin-top: -35px; margin-bottom: 10px;">
+                        <long-text :text="user.username"></long-text>
+                    </div>
+                </template>
                 <template #item="{ item, props }">
                     <router-link v-if="item.route" v-slot="{ href, navigate }" :to="item.route" custom>
                         <a v-ripple :href="href" v-bind="props.action" @click="navigate">
@@ -166,4 +168,15 @@ onBeforeUnmount(() => {
     </div>
 </template>
 
-<style lang="scss" scoped></style>
+<style lang="scss" scoped>
+@media (max-width: 991px) {
+    .layout-topbar-menu-hidden {
+        visibility: hidden !important;
+    }
+
+    .layout-topbar-menu {
+        flex-direction: column-reverse !important;
+    }
+}
+
+</style>

@@ -30,8 +30,8 @@ function getUserInitials(user) {
     
     if (user.firstName && user.lastName) {
         return `${user.firstName.charAt(0)}${user.lastName.charAt(0)}`.toUpperCase();
-    } else if (user.userName) {
-        return user.userName.slice(0, 2).toUpperCase();
+    } else if (user.username) {
+        return user.username.slice(0, 1).toUpperCase();
     }
     
     return '';
