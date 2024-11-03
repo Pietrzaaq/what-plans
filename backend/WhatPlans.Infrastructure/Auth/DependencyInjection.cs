@@ -17,6 +17,7 @@ public static class DependencyInjection
         var connectionString = configuration.GetSection("Database:ConnectionString").Value;
         var database = configuration.GetSection("Database:DatabaseName").Value;
         
+        services.AddScoped<ICurrentUserProvider, CurrentUserProvider>();
         services.AddScoped<IUserManager, UserManager>();
         services.AddSingleton<IJwtService, JwtService>();
         services.AddIdentityMongoDbProvider<User, MongoRole>(identityOptions =>
@@ -55,6 +56,7 @@ public static class DependencyInjection
                 };
             });
 
+        services.AddHttpContextAccessor();
         services.AddAuthorization();
         
         return services;

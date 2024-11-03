@@ -16,14 +16,16 @@ public class UserController : BaseController
     private readonly IUserManager _userManager;
     private readonly IJwtService _jwtService;
     private readonly IDateTimeProvider _dateTimeProvider;
+    private readonly ICurrentUserProvider _currentUserProvider;
 
-    public UserController(IMediator mediator, IMongoContext mongoContext, IUserManager userManager, IJwtService jwtService, IDateTimeProvider dateTimeProvider)
+    public UserController(IMediator mediator, IMongoContext mongoContext, IUserManager userManager, IJwtService jwtService, IDateTimeProvider dateTimeProvider, ICurrentUserProvider currentUserProvider)
         : base(mediator)
     {
         _mongoContext = mongoContext;
         _userManager = userManager;
         _jwtService = jwtService;
         _dateTimeProvider = dateTimeProvider;
+        _currentUserProvider = currentUserProvider;
     }
 
     [HttpPost("register")]
@@ -80,16 +82,15 @@ public class UserController : BaseController
     [HttpGet("me")]
     public async Task<IActionResult> GetCurrentUser()
     {
-        if (string.IsNullOrWhiteSpace(HttpContext.User.Identity?.Name))
+        var user = await _currentUserProvider.GetUser();
+        if (user is null)
         {
             return NotFound();
         }
-        
-        var userId = ObjectId.Parse(HttpContext.User.Identity.Name);
-        var user = await _mongoContext.Users.Find(u => u.Id == userId).FirstAsync();
 
         var response = new UserDto()
         {
+            Id = user.Id,
             Username = user.UserName,
             FirstName = user.FirstName,
             LastName = user.LastName,
