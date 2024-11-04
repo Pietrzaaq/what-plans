@@ -5,13 +5,13 @@
         lastName,
         isAdmin,
         isOrganizer,
-        avatarUrl
+        avatarId
         } = {}) {
         this.username = username;
         this.firstName = firstName;
         this.lastName = lastName;
         this.isAdmin = isAdmin;
         this.isOrganizer = isOrganizer;
-        this.avatarUrl = avatarUrl;
+        this.avatarId = avatarId;
     }
 }

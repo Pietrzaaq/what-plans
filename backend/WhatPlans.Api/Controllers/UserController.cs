@@ -100,7 +100,7 @@ public class UserController : BaseController
             LastVisitDate = user.LastVisitDate,
             IsAdmin = user.IsAdmin,
             IsOrganizer = user.IsOrganizer,
-            AvatarUrl = user.AvatarUrl
+            AvatarId = user.AvatarId
         };
 
         return Ok(response);
@@ -118,9 +118,46 @@ public class UserController : BaseController
             LastName = user.LastName,
             IsAdmin = user.IsAdmin,
             IsOrganizer = user.IsOrganizer,
-            AvatarUrl = user.AvatarUrl,
+            AvatarId = user.AvatarId,
         };
         
         return Ok(userDto);
+    }
+    
+    [HttpPatch("me")]
+    public async Task<IActionResult> UpdateUser(Application.Users.Update.Request request)
+    {
+        var user = await _currentUserProvider.GetUser();
+        if (user is null)
+            return NotFound();
+        
+        var filter = Builders<User>.Filter.Eq(p => p.Id, user.Id);
+        ObjectId.TryParse(request.Body.AvatarId, out var avatarId);
+        
+        var update = Builders<User>.Update
+            .Set(p => p.FirstName, request.Body.FirstName)
+            .Set(p => p.LastName, request.Body.LastName)
+            .Set(p => p.BirthDate, DateOnly.FromDateTime(request.Body.BirthDate))
+            .Set(p => p.Culture, request.Body.Culture)
+            .Set(p => p.AvatarId, avatarId);
+        
+        await _mongoContext.Users.UpdateOneAsync(filter, update);
+
+        var response = new UserDto()
+        {
+            Id = user.Id,
+            Username = user.UserName,
+            FirstName = user.FirstName,
+            LastName = user.LastName,
+            BirthDate = user.BirthDate,
+            RegisterDate = user.RegisterDate,
+            Culture = user.Culture,
+            LastVisitDate = user.LastVisitDate,
+            IsAdmin = user.IsAdmin,
+            IsOrganizer = user.IsOrganizer,
+            AvatarId = user.AvatarId
+        };
+        
+        return Ok(response);
     }
 }

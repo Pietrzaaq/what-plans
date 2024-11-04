@@ -9,7 +9,12 @@ export default new class UsersService {
 
     async me() {
         return await axios.get(`${import.meta.env.VITE_API_BASE_URL}/users/me`)
-            .then(response => new User({ ...response.data }));
+            .then(response => new User(response.data ));
+    }
+    
+    async update(request) {
+        return await axios.patch(`${import.meta.env.VITE_API_BASE_URL}/users/me`, request)
+            .then(response => new User(response.data));
     }
 
     async login(request) {

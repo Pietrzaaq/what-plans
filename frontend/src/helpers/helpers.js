@@ -4,6 +4,12 @@ function getApiDateTime(date) {
     return moment(date).format('YYYY-MM-DDTHH:mm:ss');
 }
 
+function getImageUrl(blob) {
+    console.log('blob', blob);
+    return URL.createObjectURL(blob);
+}
+
+
 function getUniqueString() {
     return '_' + Math.random().toString(36).substr(2, 9);
 }
@@ -40,5 +46,6 @@ export {
     getApiDateTime,
     getUniqueString,
     groupBy,
-    getUserInitials
+    getUserInitials,
+    getImageUrl
 };

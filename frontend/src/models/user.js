@@ -10,7 +10,7 @@
         isOrganizer,
         registerDate,
         lastVisitDate,
-        avatarUrl
+        avatarId
         } = {}) {
         this.id = id;
         this.username = username;
@@ -22,6 +22,6 @@
         this.isOrganizer = isOrganizer;
         this.registerDate = registerDate;
         this.lastVisitDate = lastVisitDate;
-        this.avatarUrl = avatarUrl;
+        this.avatarId = avatarId;
     }
 }

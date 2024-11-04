@@ -15,6 +15,21 @@ public static class DependencyInjection
         services.AddSingleton(mongoDbSettings);
         services.AddScoped<IMongoContext, MongoContext>();
         
+        var deploymentMode = configuration["Deployment"];
+        if (deploymentMode == "Cloud")
+        {
+            var blobStorageConnectionString = configuration.GetSection("FileStorage:ConnectionString").Value;
+            var containerName = configuration.GetSection("FileStorage:ContainerName").Value;
+            var azureBlobStorageSettings = new AzureBlobStorageSettings() { ConnectionString = blobStorageConnectionString, ContainerName = containerName };
+            
+            services.AddSingleton(azureBlobStorageSettings);
+            services.AddSingleton<IImageService, AzureBlobImageService>();
+        }
+        else
+        {
+            services.AddScoped<IImageService, MongoImageService>();
+        }
+        
         return services;
     }
 }

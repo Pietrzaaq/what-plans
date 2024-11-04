@@ -1,4 +1,5 @@
 ﻿using AspNetCore.Identity.Mongo.Model;
+using MongoDB.Bson;
 
 namespace WhatPlans.Domain.Entities;
 
@@ -12,11 +13,12 @@ public class User : MongoUser
     public bool IsOrganizer { get; set; }
     public DateTime RegisterDate { get; set; } 
     public DateTime LastVisitDate { get; set; } 
-    public string AvatarUrl { get; set; }
+    public ObjectId? AvatarId { get; set; }
 }
 
 public class UserDto
 {
+    public ObjectId Id { get; set; }
     public string Username { get; set; }
     public string FirstName { get; set; }
     public string LastName { get; set; }
@@ -26,7 +28,7 @@ public class UserDto
     public bool IsOrganizer { get; set; }
     public DateTime RegisterDate { get; set; } 
     public DateTime LastVisitDate { get; set; } 
-    public string AvatarUrl { get; set; }
+    public ObjectId? AvatarId { get; set; }
 }
 
 public class UserLightDto
@@ -36,5 +38,5 @@ public class UserLightDto
     public string LastName { get; set; }
     public bool IsAdmin { get; set; }
     public bool IsOrganizer { get; set; }
-    public string AvatarUrl { get; set; }
+    public ObjectId? AvatarId { get; set; }
 }

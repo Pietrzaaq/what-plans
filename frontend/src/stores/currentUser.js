@@ -26,6 +26,19 @@ export const useCurrentUserStore = defineStore(
             }
         }
         
+        async function reload() {
+            try {
+                _user.value = await usersService.me();
+                _isAuthenticated.value = true;
+            }
+            catch (error) {
+                console.error('Token is invalid or expired:', error);
+                localStorage.removeItem('userToken');
+                _user.value = null;
+                _isAuthenticated.value = false;
+            }
+        }
+        
         function logout() {
             localStorage.removeItem('userToken');
             _user.value = null;
@@ -36,6 +49,7 @@ export const useCurrentUserStore = defineStore(
             user,
             isAuthenticated,
             setUser,
+            reload,
             logout
         };
     });

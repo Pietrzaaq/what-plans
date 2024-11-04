@@ -4,7 +4,8 @@ namespace WhatPlans.Domain.Entities;
 
 public class Image
 {
-    public ObjectId ImageId { get; set; }
+    public ObjectId Id { get; set; }
+    public string Url { get; set; }
 
     public byte[] BinaryData { get; set; }  
 
@@ -26,5 +27,13 @@ public class Image
 
     public long Size { get; set; } 
 
+    public string AltText { get; set; } 
+}
+
+public class ImageDto
+{
+    public ObjectId Id { get; set; }
+    public string Url { get; set; }
+    public string Description { get; set; }  
     public string AltText { get; set; } 
 }
