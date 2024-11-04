@@ -26,8 +26,10 @@ const avatarUrl = ref(null);
 const userInitials = computed(() => getUserInitials(user.value));
 
 const setAvatarUrl = async () => {
-    if (!user.value.avatarId) 
+    if (!user.value.avatarId)  {
+        avatarUrl.value = null;
         return;
+    }
     
     const image = await imagesService.getById(user.value.avatarId);
     

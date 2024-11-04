@@ -139,7 +139,7 @@ public class UserController : BaseController
             .Set(p => p.LastName, request.Body.LastName)
             .Set(p => p.BirthDate, DateOnly.FromDateTime(request.Body.BirthDate))
             .Set(p => p.Culture, request.Body.Culture)
-            .Set(p => p.AvatarId, avatarId);
+            .Set(p => p.AvatarId, ObjectId.Empty == avatarId ? null : avatarId);
         
         await _mongoContext.Users.UpdateOneAsync(filter, update);
 

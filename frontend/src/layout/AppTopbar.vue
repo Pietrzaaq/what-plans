@@ -139,7 +139,7 @@ onBeforeUnmount(() => {
                 text
                 rounded
                 @click="toggle">
-                <UserAvatar :user="user"></UserAvatar>
+                <UserAvatar :user="user" style="border: 2px solid var(--text-color-secondary);; border-radius: 50%;"></UserAvatar>
             </Button>
             <div v-else class="flex gap-2 ml-2">
                 <Button label="Log in" @click="login" outlined></Button>
