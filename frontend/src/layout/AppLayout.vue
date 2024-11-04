@@ -68,7 +68,6 @@ const route = useRoute();
 const currentUserStore = useCurrentUserStore();
 
 const isMapRoute = computed(() => {
-  console.log(route);
   return route.name === 'map';
 });
 

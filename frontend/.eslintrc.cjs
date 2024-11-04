@@ -20,7 +20,7 @@ module.exports = {
         'semi': [2, "always"],
         'vue/first-attribute-linebreak': ["warn", {
             "singleline": "beside",
-            "multiline": "below"
+            "multiline": "beside"
         }],
         "vue/html-indent": ["error", 4, {
             "attribute": 1,
