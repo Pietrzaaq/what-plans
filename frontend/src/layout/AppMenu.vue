@@ -18,18 +18,17 @@ const onCityUpdate = (value) => {
 
 <template>
     <div class="relative flex align-items-center w-full pt-2">
-        <font-awesome-icon class="absolute z-5 pl-3" icon="fas fa-location-dot" size="lg"></font-awesome-icon>
-        <Dropdown 
-            v-if="!isLoading"
-            class="w-full px-2"
-            v-model="city"
-            :options="cities"
-            :virtual-scroller-options="{ itemSize: 50 }"
-            input-class="ml-4"
-            filter 
-            placeholder="Select a City"
-            option-label="name" 
-            @update:modelValue="onCityUpdate">
+        <font-awesome-icon class="absolute z-5 pl-3 text-primary" icon="fas fa-location-dot" size="lg"></font-awesome-icon>
+        <Dropdown v-if="!isLoading"
+                  class="w-full px-2"
+                  v-model="city"
+                  :options="cities"
+                  :virtual-scroller-options="{ itemSize: 50 }"
+                  input-class="ml-4"
+                  filter 
+                  placeholder="Select a City"
+                  option-label="name" 
+                  @update:modelValue="onCityUpdate">
             <template #value="{ value }">
                 <div v-if="value" class="flex align-items-center">
                     <div>{{ value.name }}</div>

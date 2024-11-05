@@ -6,7 +6,7 @@ import { usePopup } from "../composables/map/popup";
 import EventDialog from "../components/map/EventDialog.vue";
 import 'leaflet.awesome-markers/dist/leaflet.awesome-markers.css'; 
 import 'leaflet.awesome-markers/dist/leaflet.awesome-markers.js';
-import Filter from "../components/map/Filter.vue";
+import Filter from "../components/map/filter/Filter.vue";
 import { useGlobalStore } from "@/stores/global.js";
 import { storeToRefs } from "pinia";
 import EventPopup from "@/components/map/popups/EventPopup.vue";
