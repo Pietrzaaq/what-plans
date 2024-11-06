@@ -82,6 +82,19 @@ function onMonthUpdate(value) {
     nextTick(() => { isUpdating.value = false; });
 }
 
+function onRangeChange() {
+    if (!dates.value)
+        return;
+    
+    const startDate = dates.value[0];
+    let endDate = dates.value[1];
+    
+    if (!endDate)
+        endDate = startDate;
+    
+    filterStore.setDates(startDate, endDate);
+}
+
 function onSwitchToWeekend() {
     const newStartOfWeek = moment(startDate.value).startOf('week').toDate();
     const newEndOfWeek = moment(startDate.value).endOf('week').toDate();
@@ -113,8 +126,6 @@ const checkViewWidth = () => {
 };
 
 onMounted(() => {
-    console.log('On mounted', dateType.value, startDate.value, endDate.value);
-    
     checkViewWidth();
     window.addEventListener("resize", checkViewWidth);
     
@@ -133,9 +144,6 @@ onMounted(() => {
     
     if (eventTypes.value)
         selectedEventTypes.value = EVENT_TYPE_OPTIONS.filter(t => eventTypes.value.includes(t.value));
-
-    console.log('On mounted', dates.value);
-    
 });
 
 </script>
@@ -191,7 +199,7 @@ onMounted(() => {
                     <span class="pi pi-minus"/>
                 </template>
             </InputNumber>
-            <Calendar v-else v-model="dates" showIcon selectionMode="range" iconDisplay="input" input-id="dateRangePicker" class="w-full" />
+            <Calendar v-else v-model="dates" showIcon selectionMode="range" iconDisplay="input" input-id="dateRangePicker" class="w-full" @hide="onRangeChange"/>
         </div>
         <div>
             <div class="flex flex-nowrap align-items-center gap-2 ml-2 pb-2">

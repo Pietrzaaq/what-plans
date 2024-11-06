@@ -20,9 +20,9 @@ export const useFilterStore = defineStore(
         const eventTypes = computed(() => _eventTypes.value);
         const _dateType = ref(FILTER_DATE_TYPE.WEEKEND);
         const dateType = computed(() => _dateType.value);
-        const _startDate = ref(null);
+        const _startDate = ref(new Date());
         const startDate = computed(() => _startDate.value);
-        const _endDate = ref(null);
+        const _endDate = ref(new Date());
         const endDate = computed(() => _endDate.value);
 
         async function loadFilter() {
@@ -56,18 +56,18 @@ export const useFilterStore = defineStore(
                 _dateType.value = dateType;
             
             const startDate = JSON.parse(localStorage.getItem('startDate'));
-            const endDate = JSON.parse(localStorage.getItem('startDate'));
+            const endDate = JSON.parse(localStorage.getItem('endDate'));
             if (!startDate) {
                 const startOfWeek = moment().startOf('week').toDate();
                 const endOfWeek = moment().endOf('week').toDate();
-                _startDate.value = startOfWeek;
-                _endDate.value = endOfWeek;
+                _startDate.value = moment(startOfWeek).toDate();
+                _endDate.value = moment(endOfWeek).toDate();
                 localStorage.setItem('startDate', JSON.stringify(startOfWeek));
                 localStorage.setItem('endDate', JSON.stringify(endOfWeek));
             }
             else {
-                _startDate.value = startDate;
-                _endDate.value = endDate;
+                _startDate.value = moment(startDate).toDate();
+                _endDate.value = moment(endDate).toDate();
             }
                 _dateType.value = dateType;
         }

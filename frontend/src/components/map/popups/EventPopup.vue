@@ -1,5 +1,5 @@
 ﻿<script setup>
-import { onMounted, ref, toRef, watch } from 'vue';
+import { computed, onMounted, ref, toRef, watch } from 'vue';
 import { useFavoritesStore } from "@/stores/favorites.js";
 import EventItem from "@/components/map/popups/EventItem.vue";
 import LongTextLink from "@/components/shared/LongTextLink.vue";
@@ -13,6 +13,17 @@ const event = ref(null);
 
 const favoritesStore = useFavoritesStore();
 const isFavorite = ref(false);
+
+const eventPopupClasses = computed(() => {
+    if (events.value.length < 2)
+        return 'event-popup-short';
+
+    if (events.value.length < 3)
+        return 'event-popup-medium';
+    
+    return '';
+});
+
 watch(teleportToRef, function () {});
 
 onMounted(() => {
@@ -26,17 +37,15 @@ onMounted(() => {
 <template>
     <Teleport :to="teleportToRef">
         <Transition appear>
-            <DataView
-                v-if="events.length > 1"
-                class="event-popup"
-                :value="events"
-                :paginator="events.length > 3"
-                :rows="3">
+            <DataView class="event-popup"
+                      :class="eventPopupClasses"
+                      :value="events"
+                      :paginator="events.length > 3"
+                      :rows="3">
                 <template #header>
                     <div class="w-full text-center">
-                        <LongTextLink
-                            class="font-bold w-full text-center text-l" :to="`/?placeId=${place.id}`"
-                            :text="place.name"/>
+                        <LongTextLink class="font-bold w-full text-center text-l" :to="`/?placeId=${place.id}`"
+                                      :text="place.name"/>
                         <div class="text-light text-sm">{{ `${events.length} Events` }}</div>
                     </div>
                 </template>
@@ -54,6 +63,7 @@ onMounted(() => {
 .event-popup {
     display: flex;
     flex-direction: column;
+    justify-content: center;
     padding: 0 !important;
     min-width: 10rem !important;
     max-width: 30rem !important;
@@ -61,6 +71,16 @@ onMounted(() => {
     max-height: 35rem !important;
     border-radius: 2rem !important;
     overflow: hidden;
+}
+
+.event-popup-short {
+    min-height: 12rem !important;
+    max-height: 12rem !important;
+}
+
+.event-popup-medium {
+    min-height: 16rem !important;
+    max-height: 16rem !important;
 }
 </style>
 

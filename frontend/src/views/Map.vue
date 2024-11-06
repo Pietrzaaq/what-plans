@@ -22,7 +22,7 @@ const mapStore = useMapStore();
 const { map, zoom, center, currentGeohashes, loadedGeohashes, geohashesToLoad, geohashPrecision } = storeToRefs(mapStore);
 
 const filterStore = useFilterStore();
-const { mapType, eventTypes } = storeToRefs(filterStore);
+const { mapType, eventTypes, startDate } = storeToRefs(filterStore);
 
 const globalStore = useGlobalStore();
 const { city } = storeToRefs(globalStore);
@@ -35,6 +35,11 @@ watch(mapType, async() => {
 
 watch(eventTypes, async() => {
     await loadMarkers();
+});
+
+watch(startDate, async() => {
+    mapStore.clear();
+    await loadGeohashes();
 });
 
 // CITY
@@ -199,20 +204,17 @@ onBeforeUnmount(() => {
         <div id="map" style="height: 100%"></div>
     </main>
     <Filter></Filter>
-    <PlacePopup
-        v-if="isPlacePopupVisible" 
-        :teleportTo="teleportTo" 
-        :popup-place="popupTargetObject" 
-        @addEvent="openEventDialog"></PlacePopup>
-    <EventPopup
-        v-if="isEventPopupVisible"
-        :teleportTo="teleportTo"
-        :popup-place="popupTargetObject"
-        @addEvent="openEventDialog"></EventPopup>
-    <EventDialog
-        :visible="isDialogVisible"
-        :area="dialogArea"
-        @close-dialog="onDialogClosed"></EventDialog>
+    <PlacePopup v-if="isPlacePopupVisible" 
+                :teleportTo="teleportTo" 
+                :popup-place="popupTargetObject" 
+                @addEvent="openEventDialog"></PlacePopup>
+    <EventPopup v-if="isEventPopupVisible"
+                :teleportTo="teleportTo"
+                :popup-place="popupTargetObject"
+                @addEvent="openEventDialog"></EventPopup>
+    <EventDialog :visible="isDialogVisible"
+                 :area="dialogArea"
+                 @close-dialog="onDialogClosed"></EventDialog>
 </template>
 
 <style>

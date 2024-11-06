@@ -3,11 +3,14 @@ import { defineStore } from "pinia";
 import { MAP_TYPES } from "@/models/mapTypes.js";
 import mapService from "@/services/mapService.js";
 import L from 'leaflet';
+import { useFilterStore } from "@/stores/filter.js";
 
 const DEFAULT_COORDINATES = [51.769406790090855, 19.43750792680422];
 const DEFAULT_ZOOM = 13;
 const OPEN_STREET_MAP_TILE_URL = 'https://tile.openstreetmap.org/{z}/{x}/{y}.png';
 const MAP_TILER_TILE_URL = `https://api.maptiler.com/maps/basic-v2/{z}/{x}/{y}.png?key=${import.meta.env.VITE_MAP_TILER_API_KEY}`;
+
+const filterStore = useFilterStore();
 
 export const useMapStore = defineStore(
     'map', () => {
@@ -66,7 +69,9 @@ export const useMapStore = defineStore(
                 _data.value.push(...cities);
             }
             else if (mapType === MAP_TYPES.EVENT) {
-                const events = await mapService.getEvents(geohashesToLoad.value);
+                const startDate= filterStore.startDate;
+                const endDate = filterStore.endDate;
+                const events = await mapService.getEvents(geohashesToLoad.value, startDate, endDate);
                 _data.value.push(...events);
             }
             else {

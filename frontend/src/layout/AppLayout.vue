@@ -76,7 +76,7 @@ onBeforeMount(() => {
     if (userToken) {
         currentUserStore.setUser(userToken);
     }
-    
+
     globalStore.initialize();
     filterStore.loadFilter();
     favoritesStore.loadAll();
