@@ -25,7 +25,7 @@ const filterStore = useFilterStore();
 const { mapType, eventTypes, startDate } = storeToRefs(filterStore);
 
 const globalStore = useGlobalStore();
-const { city } = storeToRefs(globalStore);
+const { city, searchItem } = storeToRefs(globalStore);
 
 // FILTER
 watch(mapType, async() => {
@@ -52,6 +52,18 @@ watch(city, (newValue, oldValue) => {
     }
 });
 
+// SEARCH 
+watch(searchItem, newValue => {
+    if (newValue) {
+        globalStore.setSearchItem(null);
+        const center = [newValue.latitude, newValue.longitude];
+        mapStore.clear();
+        mapStore.setCenter(center);
+        mapStore.setZoom(16);
+        map.value.setView(center, zoom.value);
+    }
+});
+
 // DIALOG
 const isDialogVisible = ref(false);
 const dialogArea = ref(null);
@@ -73,7 +85,11 @@ const { teleportTo, isPlacePopupVisible, isEventPopupVisible, popupTargetObject,
 
 // MARKERS
 const markerLayer = ref(null);
-const { loadCitiesCircles, loadPlacesMarkers, loadEventsMarkers } = useMarker(markerLayer, map, showPlacePopup, showEventPopup, hidePopup);
+const { loadCitiesCircles, loadPlacesMarkers, loadEventsMarkers } = useMarker(markerLayer, map, showPlacePopup, showEventPopup, hidePopup, navigateToCity);
+
+function navigateToCity(e) {
+    console.log('Navigate', e);
+}
 
 async function loadMarkers() {
     if (markerLayer.value) {

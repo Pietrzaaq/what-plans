@@ -10,7 +10,7 @@ export default new class SportEventService {
     }
 
     async create(event) {
-        return await axios.post(`${import.meta.env.VITE_API_BASE_URL}/api/events`, event).then(response => response.data);
+        return await axios.post(`${import.meta.env.VITE_API_BASE_URL}/events`, event).then(response => response.data);
     }
 };
 

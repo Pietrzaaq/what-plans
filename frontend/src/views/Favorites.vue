@@ -49,18 +49,16 @@ onMounted(() => {
             <TabView>
                 <TabPanel header="Favorite Events">
                     <div v-if="events.length > 0 && favoriteEvents.length > 0" class="card-container w-full">
-                        <Card
-                            v-for="event in favoriteEvents"
-                            :key="event.id"
-                            class="event-card"
-                            :title="event.name">
+                        <Card v-for="event in favoriteEvents"
+                              :key="event.id"
+                              class="event-card"
+                              :title="event.name">
                             <template #content>
                                 <div class="relative flex flex-column">
-                                    <FavoriteButton
-                                        :is-favorite="favoritesStore.isEventFavorite(event.id)"
-                                        class="absolute align-self-end mr-3 mt-3"
-                                        style="z-index: 100; right: 0"
-                                        @toggle-favorite="toggleFavoriteEvent(event.id)"/>
+                                    <FavoriteButton :is-favorite="favoritesStore.isEventFavorite(event.id)"
+                                                    class="absolute align-self-end mr-3 mt-3"
+                                                    style="z-index: 100; right: 0"
+                                                    @toggle-favorite="toggleFavoriteEvent(event.id)"/>
                                     <img :src="event.imageUrls[0]" alt="Event Image" class="event-image" />
                                 </div>
                                 <div class="event-content">
@@ -80,12 +78,15 @@ onMounted(() => {
                         <Card v-for="place in favoritePlaces" :key="place.id" class="p-col-12 p-md-6 p-lg-4">
                             <template #header>
                                 <div class="relative">
-                                    <FavoriteButton
-                                        :is-favorite="favoritesStore.isPlaceFavorite(place.id)"
-                                        class="absolute align-self-end mr-3 mt-3"
-                                        style="z-index: 100; right: 0"
-                                        @toggle-favorite="toggleFavoritePlace(place.id)"/>
-                                    <img :src="place.imageUrls[0]" alt="Place Image" class="place-image max-w-30rem" />
+                                    <FavoriteButton :is-favorite="favoritesStore.isPlaceFavorite(place.id)"
+                                                    class="absolute align-self-end mr-3 mt-3"
+                                                    style="z-index: 100; right: 0"
+                                                    @toggle-favorite="toggleFavoritePlace(place.id)"/>
+                                    <img v-if="place.imageUrls && place.imageUrls.length > 0" :src="place.imageUrls[0]" alt="Place Image" class="place-image max-w-30rem" />
+                                    <div v-else class="relative flex flex-column">
+                                        <div class="absolute h-4rem bg-primary-400" style="top: 0; width: 100%" ></div>
+                                        <div class="mb-8"></div>
+                                    </div>
                                 </div>
                             </template>
                             <template #title>

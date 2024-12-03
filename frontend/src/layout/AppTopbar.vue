@@ -6,6 +6,8 @@ import { storeToRefs } from "pinia";
 import { useToast } from "primevue/usetoast";
 import { useRouter } from "vue-router";
 import UserAvatar from "@/components/shared/UserAvatar.vue";
+import searchService from "@/services/searchService.js";
+import { useGlobalStore } from "@/stores/global.js";
 
 const { onMenuToggle } = useLayout();
 const router = useRouter();
@@ -18,6 +20,9 @@ const topbarMenuActive = ref(false);
 const menu = ref();
 
 const userMenuItems = ref([]);
+
+const searchQuery = ref('');
+const filteredResults = ref([]);
 
 watch(user, () => {
     setUserItems();
@@ -98,6 +103,26 @@ const register = async () => {
     await router.replace('auth/register');
 };
 
+const search = async () => {
+    if (searchQuery.value.length < 2) return;
+
+    try {
+        filteredResults.value = await searchService.search(searchQuery.value);
+
+        console.log(filteredResults.value);
+    } catch (error) {
+        console.error('Error fetching autocomplete results:', error);
+    }
+};
+
+const onItemSelect = async (e) => {
+    const item = e.value;
+    const globalStore = useGlobalStore();
+
+    searchQuery.value = '';
+    globalStore.setSearchItem(item);
+};
+
 onMounted(() => {
     bindOutsideClickListener();
     setUserItems();
@@ -120,7 +145,19 @@ onBeforeUnmount(() => {
         </button>
 
         <div class="layout-topbar-search p-fluid pl-2 w-4">
-            <auto-complete style="display:flex; width: 100%" placeholder="Search for events..."></auto-complete>
+            <auto-complete v-model="searchQuery"
+                           :suggestions="filteredResults"
+                           style="display:flex; width: 100%"
+                           placeholder="Search for events/places (min. 3 characters)"
+                           optionLabel="name"
+                           :minLength="3" 
+                           @complete="search" 
+                           @item-select="onItemSelect">
+                <template #item="slotProps">
+                    <span v-if="slotProps.item.type === 0">🎉 {{ slotProps.item.name }} (Event)</span>
+                    <span v-else>📍 {{ slotProps.item.name }} (Place)</span>
+                </template>
+            </auto-complete>
         </div>
 
         <button class="p-link layout-topbar-menu-button layout-topbar-button" @click="onTopBarMenuButton()">
@@ -128,17 +165,12 @@ onBeforeUnmount(() => {
         </button>
 
         <div class="layout-topbar-menu flex align-items-center" :class="topbarMenuClasses">
-            <button class="p-link layout-topbar-button">
-                <i class="pi pi-calendar"></i>
-                <span>Calendar</span>
-            </button>
-            <Button
-                v-if="user"
-                class="flex align-items-center justify-content-center p-2 p-link"
-                style="border-radius: 50% !important; min-width: 2rem;"
-                text
-                rounded
-                @click="toggle">
+            <Button v-if="user"
+                    class="flex align-items-center justify-content-center p-2 p-link"
+                    style="border-radius: 50% !important; min-width: 2rem;"
+                    text
+                    rounded
+                    @click="toggle">
                 <UserAvatar :user="user" style="border: 2px solid var(--text-color-secondary);; border-radius: 50%;"></UserAvatar>
             </Button>
             <div v-else class="flex gap-2 ml-2">

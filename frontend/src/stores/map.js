@@ -24,7 +24,7 @@ export const useMapStore = defineStore(
         const _currentGeohashes = ref([]);
         const _geohashesToLoad = ref([]);
         const _geohashPrecision = ref(4);
-        
+
         const map = computed(() => _map.value);
         const tileLayer = computed(() => _tileLayer.value);
         const tileUrl = computed(() => _tileUrl.value);
