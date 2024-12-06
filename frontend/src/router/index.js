@@ -21,6 +21,16 @@ const router = createRouter({
                     component: () => import('@/views/Favorites.vue')
                 },
                 {
+                    path: '/events',
+                    name: 'events',
+                    component: () => import('@/views/Events.vue')
+                },
+                {
+                    path: '/community',
+                    name: 'community',
+                    component: () => import('@/views/Community.vue')
+                },
+                {
                     path: '/me',
                     name: 'me',
                     component: () => import('@/views/Me.vue')

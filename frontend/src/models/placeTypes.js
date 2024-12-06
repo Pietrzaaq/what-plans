@@ -12,42 +12,42 @@
 export const PLACE_TYPES_DATA = {
     [PLACE_TYPES.THEATRE]: {
         name: 'Theatre',
-        icon: 'theater-masks',  // FontAwesome icon for theatre
+        icon: 'theater-masks',
         markerColor: 'purple',
     },
     [PLACE_TYPES.SPORTS_CENTRE]: {
         name: 'Sports Centre',
-        icon: 'heart-pulse',  // FontAwesome icon for sports centre
+        icon: 'heart-pulse',
         markerColor: 'blue',
     },
     [PLACE_TYPES.SCENE]: {
         name: 'Scene',
-        icon: 'music',  // Custom or similar icon for a scene
+        icon: 'music',
         markerColor: 'green',
     },
     [PLACE_TYPES.RESTAURANT]: {
         name: 'Restaurant',
-        icon: 'utensils',  // FontAwesome icon for restaurants
+        icon: 'utensils',
         markerColor: 'cadetblue',
     },
     [PLACE_TYPES.CLUB]: {
         name: 'Club',
-        icon: 'glass-martini',  // FontAwesome icon for clubs
+        icon: 'glass-martini',
         markerColor: 'red',
     },
     [PLACE_TYPES.MUSEUM]: {
         name: 'Museum',
-        icon: 'landmark',  // FontAwesome icon for museums
-        markerColor: 'orange',
+        icon: 'landmark',
+        markerColor: 'red',
     },
     [PLACE_TYPES.OTHER]: {
         name: 'Other',
-        icon: 'question',  // FontAwesome icon for other places
-        markerColor: 'gray',
+        icon: 'star',
+        markerColor: 'orange',
     },
     [PLACE_TYPES.MULTI]: {
         name: 'Multi-purpose',
-        icon: 'building',  // FontAwesome icon for multi-purpose buildings
+        icon: 'building',
         markerColor: 'darkblue',
     }
 };
