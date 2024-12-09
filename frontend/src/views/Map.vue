@@ -22,7 +22,7 @@ const mapStore = useMapStore();
 const { map, zoom, center, currentGeohashes, loadedGeohashes, geohashesToLoad, geohashPrecision } = storeToRefs(mapStore);
 
 const filterStore = useFilterStore();
-const { mapType, eventTypes, startDate } = storeToRefs(filterStore);
+const { mapType, eventTypes, placeTypes, startDate } = storeToRefs(filterStore);
 
 const globalStore = useGlobalStore();
 const { city, searchItem } = storeToRefs(globalStore);
@@ -34,6 +34,11 @@ watch(mapType, async() => {
 });
 
 watch(eventTypes, async() => {
+    await loadMarkers();
+});
+
+
+watch(placeTypes, async() => {
     await loadMarkers();
 });
 

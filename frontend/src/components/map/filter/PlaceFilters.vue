@@ -1,14 +1,23 @@
 ﻿<script setup>
 
-import { EVENT_TYPE_OPTIONS } from "@/stores/filter.js";
+import { PLACE_TYPE_OPTIONS, useFilterStore } from "@/stores/filter.js";
 import { FontAwesomeIcon } from "@fortawesome/vue-fontawesome";
-import { ref } from "vue";
+import { onMounted, ref } from "vue";
+import { storeToRefs } from "pinia";
 
+const filterStore = useFilterStore();
+const { placeTypes } = storeToRefs(filterStore);
 const selectedPlaceTypes = ref([]);
 
-function onPlaceTypesChange(value) {
-    
+function onPlaceTypesChange(placeTypes) {
+    const placeTypeIds = placeTypes.map(t => t.value);
+    filterStore.setPlaceTypes(placeTypeIds);
 }
+
+onMounted(() => {
+    if (placeTypes.value)
+        selectedPlaceTypes.value = PLACE_TYPE_OPTIONS.filter(t => placeTypes.value.includes(t.value));
+});
 </script>
 
 <template>
@@ -19,7 +28,7 @@ function onPlaceTypesChange(value) {
                 <label for="dateRangePicker" class="font-bold block"> Types </label>
             </div>
             <MultiSelect v-model="selectedPlaceTypes"
-                         :options="EVENT_TYPE_OPTIONS"
+                         :options="PLACE_TYPE_OPTIONS"
                          optionLabel="name"
                          placeholder="Select place types"
                          display="chip"

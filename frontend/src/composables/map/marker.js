@@ -8,7 +8,7 @@ import { EVENT_TYPES_DATA } from "@/models/eventTypes.js";
 export function useMarker(markerLayer, map, showPlacePopup, showEventPopup, hidePopup) {
     const mapStore = useMapStore();
     const filterStore = useFilterStore();
-    const { eventTypes } = storeToRefs(filterStore);
+    const { eventTypes, placeTypes } = storeToRefs(filterStore);
     
     function loadCitiesCircles() {
         mapStore.data.forEach(city => {
@@ -39,7 +39,7 @@ export function useMarker(markerLayer, map, showPlacePopup, showEventPopup, hide
         mapStore.data.forEach(place => {
             let marker;
 
-            if (!eventTypes.value.includes(place.placeType.toString()))
+            if (!placeTypes.value.includes(place.placeType.toString()))
                 return;
 
             marker = getPlaceMarker(place);

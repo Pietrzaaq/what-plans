@@ -24,10 +24,14 @@ import {
     faMasksTheater,
     faMusic,
     faUtensils,
-    faGlassCheers, 
+    faGlassCheers,
     faClock,
     faHouse,
-    faCircleXmark
+    faCircleXmark, 
+    faBuilding,
+    faHeartPulse,
+    faGlassMartini,
+    faLandmark
 } from '@fortawesome/free-solid-svg-icons';
 
 library.add(
@@ -57,7 +61,11 @@ library.add(
     faGlassCheers, 
     faClock,
     faHouse,
-    faCircleXmark);
+    faCircleXmark,
+    faBuilding,
+    faHeartPulse,
+    faGlassMartini,
+    faLandmark);
 
 export function initFontAwesome(app) {
     app.component('font-awesome-icon', FontAwesomeIcon);

@@ -4,6 +4,7 @@ import { MAP_TYPES } from "@/models/mapTypes.js";
 import { EVENT_TYPES_DATA } from "@/models/eventTypes.js";
 import { FILTER_DATE_TYPE } from "@/components/map/filter/filterDateType.js";
 import moment from "moment";
+import { PLACE_TYPES_DATA } from "@/models/placeTypes.js";
 
 export const EVENT_TYPE_OPTIONS = Object.keys(EVENT_TYPES_DATA).map(key => ({
     value: key,
@@ -12,12 +13,21 @@ export const EVENT_TYPE_OPTIONS = Object.keys(EVENT_TYPES_DATA).map(key => ({
     color: EVENT_TYPES_DATA[key].markerColor
 }));
 
+export const PLACE_TYPE_OPTIONS = Object.keys(PLACE_TYPES_DATA).map(key => ({
+    value: key,
+    name: PLACE_TYPES_DATA[key].name,
+    icon: PLACE_TYPES_DATA[key].icon,
+    color: PLACE_TYPES_DATA[key].markerColor
+}));
+
 export const useFilterStore = defineStore(
     'filter', () => {
         const _mapType = ref(MAP_TYPES.EVENT);
         const mapType = computed(() => _mapType.value);
         const _eventTypes = ref([]);
         const eventTypes = computed(() => _eventTypes.value);
+        const _placeTypes = ref([]);
+        const placeTypes = computed(() => _placeTypes.value);
         const _dateType = ref(FILTER_DATE_TYPE.WEEKEND);
         const dateType = computed(() => _dateType.value);
         const _startDate = ref(new Date());
@@ -37,7 +47,6 @@ export const useFilterStore = defineStore(
                 _mapType.value = mapType;
 
             const eventTypes = JSON.parse(localStorage.getItem('eventTypes'));
-
             if (!eventTypes) {
                 const newValue = EVENT_TYPE_OPTIONS.map(t => t.value);
                 _eventTypes.value = newValue;
@@ -45,6 +54,15 @@ export const useFilterStore = defineStore(
             }
             else
                 _eventTypes.value = eventTypes;
+
+            const placeTypes = JSON.parse(localStorage.getItem('placeTypes'));
+            if (!placeTypes) {
+                const newValue = PLACE_TYPE_OPTIONS.map(t => t.value);
+                _placeTypes.value = newValue;
+                localStorage.setItem('placeTypes', JSON.stringify(newValue));
+            }
+            else
+                _placeTypes.value = placeTypes;
 
             const dateType = JSON.parse(localStorage.getItem('dateType'));
             if (!dateType) {
@@ -81,6 +99,11 @@ export const useFilterStore = defineStore(
             _eventTypes.value = eventTypeIds;
             localStorage.setItem('eventTypes', JSON.stringify(_eventTypes.value));
         }
+
+        function setPlaceTypes(placeTypeIds) {
+            _placeTypes.value = placeTypeIds;
+            localStorage.setItem('placeTypes', JSON.stringify(_placeTypes.value));
+        }
         
         function setDateType(type) {
             _dateType.value = type;
@@ -98,12 +121,14 @@ export const useFilterStore = defineStore(
         return {
             mapType,
             eventTypes,
+            placeTypes,
             dateType,
             startDate,
             endDate,
             loadFilter,
             setMapType,
             setEventTypes,
+            setPlaceTypes,
             setDateType,
             setDates
         };
