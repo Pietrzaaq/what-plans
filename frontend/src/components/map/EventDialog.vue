@@ -1,111 +1,163 @@
 ﻿<script setup>
+import { ref, computed, watch, defineEmits, toRef } from "vue";
 import Dialog from 'primevue/dialog';
-import { ref, toRef, watch, defineEmits, computed } from "vue";
-import Button from 'primevue/button';
+import InputText from 'primevue/inputtext';
+import Dropdown from 'primevue/dropdown';
 import Calendar from 'primevue/calendar';
+import Button from 'primevue/button';
+import Checkbox from 'primevue/checkbox';
 import sportEventService from "../../services/eventsService.js";
+import { useCurrentUserStore } from "@/stores/currentUser.js";
 
 const emit = defineEmits(['close-dialog']);
-
 const props = defineProps(['visible', 'area']);
-const visibleFromProp = toRef(props, 'visible');
+
+const currentUserStore = useCurrentUserStore();
+const user = computed(() => currentUserStore.user);
+
+// Visibility handling
 const dialogVisible = ref(false);
+const visibleFromProp = toRef(props, 'visible');
 
-// Form values
-const sportType = ref(null);
-const createdBy = ref();
-const creationDate = ref();
+// Form values for Request data
+const eventName = ref("");
+const eventType = ref(null);
+const placeId = ref(null);
+const locationId = ref(props.area?.LocationId || null);  // Assuming location ID comes from area prop if available
+const creatorId = ref("");
+const eventUrl = ref("");
+const startDate = ref(new Date());
+const endDate = ref(null);
+const imageUrls = ref('');
+
+// Additional form fields
 const shouldAddDuration = ref(false);
-const duration = ref();
-const eventStartDate = ref(new Date());
-const eventEndDate = ref();
+const duration = ref(null);
 
-const availableSportTypes = computed(() =>  {
-    if (!props.area)
-        return;
-    
-    return [props.area.Sport];
-});
+// Available options for event type
+const availableEventTypes = computed(() => [
+    { id: 0, label: 'Sport', value: 'Sport' },
+    { id: 1, label: 'Music', value: 'Music' },
+    { id: 2, label: 'Cultural', value: 'Cultural' },
+    // Add more event types here as needed
+]);
 
+// Handles form submission
 function addEvent() {
-  creationDate.value = new Date();
-  
-  // const event = new SportEvent(props.area.Id, sportType.value, createdBy.value, creationDate.value, eventStartDate.value, eventEndDate.value);
-  // sportEventService.create(event);
+    const type = eventType.value.id;
+    let images;
+    if (imageUrls.value) 
+        images = imageUrls.value.split(";");
+    else 
+        images = [];
+    
+    const requestData = {
+        Name: eventName.value,
+        Type: type,
+        PlaceId: placeId.value,
+        LocationId: locationId.value,
+        CreatorId: creatorId.value,
+        Url: eventUrl.value,
+        StartDate: startDate.value,
+        EndDate: endDate.value,
+        ImageUrls: images
+    };
 
-  closeDialog();
+    // Submit request
+    sportEventService.create(requestData)
+        .then(() => closeDialog())
+        .catch(err => console.error("Failed to create event:", err));
 }
 
+// Close dialog function
 function closeDialog() {
-  emit('close-dialog');
+    console.log('closeDialog');
+    emit('close-dialog');
 }
 
-watch(visibleFromProp, function () {
-  dialogVisible.value = visibleFromProp.value;
-  
-  if (visibleFromProp.value) 
-      sportType.value = props.area.Sport;
-  else 
-      sportType.value = null;
+// Watch for visibility changes
+watch(visibleFromProp, (newVal) => {
+    dialogVisible.value = newVal;
+    if (!newVal) 
+        resetForm();
+    else {
+
+        console.log('Visiblity changed', props.area);
+
+        placeId.value = props.area.id;
+        locationId.value = props.area.location.id;
+        creatorId.value = user.value.id;
+    }
 });
+
+// Reset form fields
+function resetForm() {
+    eventName.value = "";
+    eventType.value = null;
+    placeId.value = null;
+    creatorId.value = "";
+    eventUrl.value = "";
+    startDate.value = new Date();
+    endDate.value = null;
+    imageUrls.value = [];
+    shouldAddDuration.value = false;
+    duration.value = null;
+}
+
 </script>
 
 <template>
-    <Dialog
-        :visible="visibleFromProp"
-        modal
-        header="Add event"
-        class="w-30rem"
-        @update:visible="closeDialog">
+    <Dialog :visible="dialogVisible"
+            modal
+            header="Add Event"
+            class="w-30rem"
+            @update:visible="closeDialog">
         <div class="flex flex-column gap-4">
+            <!-- Event Name -->
             <div class="flex flex-column gap-2">
-                <label for="eventName">Sport type</label>
-<!--                <SportTypeDropdown v-model="sportType" :available-types="availableSportTypes"></SportTypeDropdown>-->
+                <label for="eventName">Event Name</label>
+                <InputText v-model="eventName" id="eventName" placeholder="Enter event name" />
             </div>
+
+            <!-- Event Type -->
             <div class="flex flex-column gap-2">
-                <label for="eventStartDate">Start date</label>
-                <Calendar
-                    id="eventStartDate"
-                    v-model="duration"
-                    show-time
-                    hour-format="24"
-                    name="eventStartDate" />
+                <label for="eventType">Event Type</label>
+                <Dropdown v-model="eventType" :options="availableEventTypes" id="eventType" optionLabel="label" placeholder="Select type" />
             </div>
+            
+            <!-- Event URL -->
+            <div class="flex flex-column gap-2">
+                <label for="eventUrl">Event URL</label>
+                <InputText v-model="eventUrl" id="eventUrl" placeholder="Enter event URL" />
+            </div>
+
+            <!-- Start Date -->
+            <div class="flex flex-column gap-2">
+                <label for="startDate">Start Date</label>
+                <Calendar v-model="startDate" show-time hour-format="24" id="startDate" placeholder="Select start date and time" />
+            </div>
+
+            <!-- Duration Checkbox and End Date -->
             <div class="flex align-items-center justify-content-between gap-2 pt-1">
-                <div class="flex align-items-center gap-2">
-                    <Checkbox :value="shouldAddDuration" name="shouldAddDuration"></Checkbox>
-                    <label for="shouldAddDuration">Add duration (hours)</label> 
-                </div>
-                <Calendar
-                    v-if="shouldAddDuration"
-                    id="eventStartDate"
-                    class="h-2"
-                    v-model="duration"
-                    show-time
-                    hour-format="24"
-                    name="eventStartDate" />
+                <Checkbox v-model="shouldAddDuration" inputId="shouldAddDuration" />
+                <label for="shouldAddDuration">Add duration (hours)</label>
+                <Calendar v-if="shouldAddDuration" v-model="duration" show-time hour-format="24" />
             </div>
+
+            <!-- Image URLs -->
             <div class="flex flex-column gap-2">
-                <label for="eventStartDate">End date</label>
-                <Calendar
-                    id="eventStartDate"
-                    v-model="eventEndDate"
-                    name="eventStartDate"
-                    show-time
-                    hour-format="24" />
+                <label for="imageUrls">Image URLs</label>
+                <InputText v-model="imageUrls" id="imageUrls" placeholder="Enter image URLs (comma-separated)" />
             </div>
-            <div class="flex w-full justify-content-flex-end pt-3">
-                <Button
-                    label="Submit"
-                    icon="pi pi-check"
-                    icon-pos="right" 
-                    @click.prevent="addEvent" />
+
+            <!-- Submit Button -->
+            <div class="flex w-full justify-content-end pt-3">
+                <Button label="Submit" icon="pi pi-check" iconPos="right" @click.prevent="addEvent" />
             </div>
         </div>
     </Dialog>
 </template>
 
-
 <style scoped>
-
+/* Add custom styles here if needed */
 </style>

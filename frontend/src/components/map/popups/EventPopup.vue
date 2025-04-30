@@ -65,12 +65,17 @@ onMounted(() => {
     flex-direction: column;
     justify-content: center;
     padding: 0 !important;
-    min-width: 10rem !important;
-    max-width: 30rem !important;
+    min-width: 30rem !important;
+    max-width: 40rem !important;
     min-height: 20rem !important;
-    max-height: 35rem !important;
     border-radius: 2rem !important;
-    overflow: hidden;
+}
+
+@media (max-width: 990px) {
+    .place-popup {
+        min-width: 25rem !important;
+        max-width: 25rem !important;
+    }
 }
 
 .event-popup-short {
@@ -79,8 +84,8 @@ onMounted(() => {
 }
 
 .event-popup-medium {
-    min-height: 16rem !important;
-    max-height: 16rem !important;
+    min-height: 22rem !important;
+    max-height: 22rem !important;
 }
 </style>
 

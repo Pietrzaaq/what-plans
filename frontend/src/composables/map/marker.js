@@ -5,7 +5,7 @@ import { PLACE_TYPES_DATA } from "@/models/placeTypes.js";
 import L from "leaflet";
 import { EVENT_TYPES_DATA } from "@/models/eventTypes.js";
 
-export function useMarker(markerLayer, map, showPlacePopup, showEventPopup, hidePopup) {
+export function useMarker(markerLayer, map, showPlacePopup, showEventPopup, navigateToCity, hidePopup) {
     const mapStore = useMapStore();
     const filterStore = useFilterStore();
     const { eventTypes, placeTypes } = storeToRefs(filterStore);
@@ -16,7 +16,8 @@ export function useMarker(markerLayer, map, showPlacePopup, showEventPopup, hide
                 radius: city.radius,
                 className: 'city-circle'
             });
-
+            
+            circle.on('click', navigateToCity);
             circle.addTo(markerLayer.value);
         });
     }

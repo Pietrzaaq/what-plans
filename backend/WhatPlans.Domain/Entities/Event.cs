@@ -18,4 +18,5 @@ public class Event
     public int? Duration { get; set; }
     public decimal? Price { get; set; }
     public List<string> ImageUrls { get; set; }
+    public List<ObjectId> ImageIds { get; set; }
 }

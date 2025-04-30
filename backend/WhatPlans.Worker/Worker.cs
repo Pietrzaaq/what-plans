@@ -1,3 +1,4 @@
+using System.Globalization;
 using Geohash;
 using Microsoft.Extensions.Options;
 using MongoDB.Bson;
@@ -16,6 +17,7 @@ public class Worker : BackgroundService
     private readonly IMongoContext _mongoContext;
     private readonly IHttpClientFactory _httpClientFactory;
     private readonly TicketMasterSettings _ticketMasterSettings;
+    private static readonly Random _random = new Random();
 
     public Worker(
         ILogger<Worker> logger,
@@ -54,7 +56,7 @@ public class Worker : BackgroundService
         while (moreResults)
         {
             _logger.LogInformation($"Fetching events from TicketMaster. Page {page}");
-            var response = await client.GetAsync($"{_ticketMasterSettings.BaseUrl}/events?countryCode=PL&page={page}&apikey={_ticketMasterSettings.ApiKey}");
+            var response = await client.GetAsync($"{_ticketMasterSettings.BaseUrl}/events?countryCode=PL&page={page}&apikey={_ticketMasterSettings.ApiKey}&size=100");
 
             if (!response.IsSuccessStatusCode)
             {
@@ -77,6 +79,8 @@ public class Worker : BackgroundService
                 await ProcessEvent(ticketMasterEvent);
             }
 
+            int delay = _random.Next(5000, 7000);
+            await Task.Delay(delay);
             page++;
         }
     }
@@ -89,37 +93,60 @@ public class Worker : BackgroundService
             return;
         
         var geohasher = new Geohasher();
-        var geohash = geohasher.Encode(venue.Location.Latitude, venue.Location.Longitude, 7);
-            
+        var geohash = geohasher.Encode(venue.Location.Latitude, venue.Location.Longitude, 8);
+        var geohashes = geohasher.GetNeighbors(geohash).Select(geohashKeyValue => geohashKeyValue.Value).ToList();
+        geohashes.Add(geohash);
+        
         var nearbyPlace = await _mongoContext.Places
-            .Find(p => p.Location.Geohash.Contains(geohash))
+            .Find(p =>  geohashes.Any(g => p.Location.Geohash.Contains(g)) || p.Location.Name.Equals(venue.Name))
             .FirstOrDefaultAsync();
 
-        var localDateTime = DateTime.Parse(ticketMasterEvent.Dates.Start.LocalDate); 
+        var localDate = ticketMasterEvent.Dates.Start.LocalDate;
+        var localTime = ticketMasterEvent.Dates.Start.LocalTime;
+
+        if (localTime == null)
+        {
+            localTime = "00:00:00";
+        }
         
+        var dateTimeString = $"{localDate} {localTime}";
+        
+        DateTime localDateTime = DateTime.ParseExact(dateTimeString, "yyyy-MM-dd HH:mm:ss", CultureInfo.InvariantCulture);
+
         var existingEvent = await _mongoContext.Events
-            .Find(e => e.Name == ticketMasterEvent.Name && e.StartDate == localDateTime)
+            .Find(e => e.Name == ticketMasterEvent.Name && e.StartDate.Date == localDateTime.Date)
             .FirstOrDefaultAsync();
 
         if (existingEvent != null) 
             return;
         
         ObjectId? placeId;
-        
         if (nearbyPlace == null)
         {
+            var cityGeohash = new string(geohash.Take(4).ToArray());
+            var cities = _mongoContext.Cities.Find(p => p.Geohash.Contains(cityGeohash)).ToList();
+
+            if (cities == null || cities.Count == 0)
+                return;
+
+            var city = cities.OrderByDescending(c => c.Population).FirstOrDefault();
+
+            if (city == null)
+                return;
+            
             var newPlace = new Place
             {
                 Id = ObjectId.GenerateNewId(),
                 Name = venue.Name,
-                Location = new WhatPlans.Domain.Entities.Location
+                Location = new Domain.Entities.Location
                 {
                     Latitude = venue.Location.Latitude,
                     Longitude = venue.Location.Longitude,
                     Address = venue.Address.Line1,
-                    CityName = venue.City.Name,
-                    FormatedAddress = $"{venue.Address.Line1}, venue.City.Name",
-                    Geohash = geohasher.Encode(venue.Location.Latitude, venue.Location.Longitude)
+                    CityName = city.Name,
+                    CityId = city.Id.ToString(),
+                    FormatedAddress = $"{venue.Address.Line1}, {city.Name}",
+                    Geohash = geohash
                 },
                 PlaceType = PlaceTypes.Other,
                 Description = null,
@@ -127,9 +154,12 @@ public class Worker : BackgroundService
                 GoogleMapsUrl = null,
                 OpenStreetMapId = null,
                 CreateDate = DateTime.UtcNow,
-                UpdateDate = DateTime.UtcNow
+                UpdateDate = DateTime.UtcNow,
+                CreatorId = "Ticketmaster"
             };
     
+            _logger.LogInformation($"Saving place from TicketMaster. Place: {newPlace.Name}, City: {city.Name}");
+
             await _mongoContext.Places.InsertOneAsync(newPlace);
             placeId = newPlace.Id;
         }
@@ -148,9 +178,11 @@ public class Worker : BackgroundService
             EndDate = null,
             ImageUrls = images,
             EventType = MapToEventType(ticketMasterEvent.Classifications),
-            PlaceId = placeId
+            PlaceId = placeId,
+            CreatorId = "Ticketmaster"
         };
 
+        _logger.LogInformation($"Saving event from TicketMaster. Event: {newEvent.Name}, Date: {newEvent.StartDate.ToShortDateString()}");
         await _mongoContext.Events.InsertOneAsync(newEvent);
     }
 
@@ -164,6 +196,7 @@ public class Worker : BackgroundService
         return category switch
         {
             "Music" => EventTypes.Musical,
+            "Arts & Theatre" => EventTypes.Cultural,
             "Sports" => EventTypes.Sport,
             "Food & Drink" => EventTypes.Culinary,
             _ => EventTypes.Other

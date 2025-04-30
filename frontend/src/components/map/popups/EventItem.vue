@@ -12,6 +12,17 @@ const props = defineProps(['item']);
 const item = toRef(props.item);
 const isFavorite = ref(favoritesStore.isEventFavorite(item.value.id));
 const startDate = computed(() => moment(item.value.startDate).format('LLL'));
+const imageUrls = computed(() => {
+    console.log(item.value);
+    const itemImageUrls = item.value.imageUrls;
+    if (item.value.creatorId !== 'Ticketmaster') {
+        return itemImageUrls;
+    }
+
+    const first = itemImageUrls[0];
+    return [first];
+});
+
 
 function toggleFavorite() {
     favoritesStore.toggleEventFavorite(item.value.id, isFavorite.value);
@@ -26,26 +37,24 @@ function buyTicket() {
 <template>
     <div v-if="item && item.id" class="flex flex-column justify-content-between md:flex-row p-2 gap-2">
         <div class="flex justify-content-center align-items-center w-full md:w-3">
-            <Galleria
-                v-if="item"
-                :value="item.imageUrls"
-                :numVisible="5"
-                :showThumbnails="false"
-                :showIndicators="true"
-                :changeItemOnIndicatorHover="true"
-                :showIndicatorsOnItem="true"
-                indicatorsPosition="bottom">
+            <Galleria v-if="item"
+                      :value="imageUrls"
+                      :numVisible="5"
+                      :showThumbnails="false"
+                      :showIndicators="true"
+                      :changeItemOnIndicatorHover="true"
+                      :showIndicatorsOnItem="true"
+                      indicatorsPosition="bottom">
                 <template #item="slotProps">
-                    <img
-                        class="block xl:block"
-                        :src="slotProps.item"
-                        :alt="item.name"
-                        style="width: 6rem; height: 6rem; border-radius: 1rem; display: block" />
+                    <img class="block xl:block"
+                         :src="slotProps.item"
+                         :alt="item.name"
+                         style="width: 6rem; height: 6rem; border-radius: 1rem; display: block" />
                 </template>
             </Galleria>
         </div>
-        <div class="flex flex-column md:flex gap-2 max-w-15rem md:w-9">
-            <LongTextLink class="font-bold text-l w-full" :to="`/?eventId=${item.id}`" :text="item.name"/>
+        <div class="flex flex-column md:flex gap-2 max-w-full md:w-9">
+            <LongTextLink class="font-bold text-l w-full" :to="`/?eventId=${item.id}`" :text="item.name" @click=""/>
             <div class="flex align-items-center gap-2 pb-1">
                 <div>
                     <font-awesome-icon icon="fas fa-calendar-days"></font-awesome-icon>

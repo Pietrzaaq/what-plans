@@ -17,6 +17,7 @@ public class Place
     public string Polygon { get; set; }
     public int? Capacity { get; set; }
     public List<string> ImageUrls { get; set; }
+    public List<ObjectId> ImageIds { get; set; }
     public string OpenStreetMapId { get; set; }
     public string OpenStreetMapAmenity { get; set; }
     public string OpenStreetMapSport { get; set; }

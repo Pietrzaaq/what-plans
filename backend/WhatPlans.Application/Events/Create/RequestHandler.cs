@@ -26,6 +26,7 @@ public class RequestHandler : IRequestHandler<Request, Event>
             Name = request.Body.Name,
             StartDate = request.Body.StartDate,
             EndDate = request.Body.EndDate,
+            Url = request.Body.Url,
             Duration = request.Body.EndDate is null ? null : (request.Body.EndDate - request.Body.StartDate).Value.Minutes,
             ImageUrls = request.Body.ImageUrls
         };
