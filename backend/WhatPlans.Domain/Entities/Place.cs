@@ -31,6 +31,7 @@ public class Place
     public string GoogleMapsUrl { get; set; }
     public DateTime CreateDate { get; set; }
     public DateTime UpdateDate { get; set; }
+    public string UpdatedBy { get; set; }
 }
 
 
