@@ -7,6 +7,8 @@ import { useFilterStore } from "@/stores/filter.js";
 
 const DEFAULT_COORDINATES = [51.769406790090855, 19.43750792680422];
 const DEFAULT_ZOOM = 13;
+const MAX_ZOOM = 19;
+const MIN_ZOOM = 6;
 const OPEN_STREET_MAP_TILE_URL = 'https://tile.openstreetmap.org/{z}/{x}/{y}.png';
 const MAP_TILER_TILE_URL = `https://api.maptiler.com/maps/basic-v2/{z}/{x}/{y}.png?key=${import.meta.env.VITE_MAP_TILER_API_KEY}`;
 
@@ -54,10 +56,10 @@ export const useMapStore = defineStore(
             }
             
             _tileLayer.value = L.tileLayer(_tileUrl.value, {
-                minZoom: 7,
-                maxZoom: 19,
+                minZoom: MIN_ZOOM,
+                maxZoom: MAX_ZOOM,
                 closePopupOnClick: false,
-                attribution: '<span>Projekt wykonany w ramach pracy magisterkiej na Uniwersytecie Łódzkim</span> &copy; <a href="http://www.openstreetmap.org/copyright">OpenStreetMap</a>'
+                attribution: '&copy; <a href="http://www.openstreetmap.org/copyright">OpenStreetMap</a>'
             });
 
             _tileLayer.value.addTo(map.value);

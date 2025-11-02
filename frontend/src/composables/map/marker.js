@@ -56,15 +56,15 @@ export function useMarker(markerLayer, map, showPlacePopup, showEventPopup, navi
         const typeData = PLACE_TYPES_DATA[place.placeType];
         const html = `
             <div class="place-marker-content" style="background-color: ${typeData.markerColor}">
-                <i class="fa fa-${typeData.icon}"></i>
+                <i class="fa fa-${typeData.icon} text-lg"></i>
             </div>
             <div class="place-marker-label">${place.name}</div>`;
 
         const overlay = L.divIcon({
             className: 'place-marker',
             html: html,
-            iconSize: [50, 50],
-            iconAnchor: [25, 25]
+            iconSize: [30, 30],
+            iconAnchor: [15, 15]
         });
 
         const marker = L.marker(latLng, { icon: overlay });
