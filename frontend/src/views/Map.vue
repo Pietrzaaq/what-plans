@@ -16,6 +16,10 @@ import { MAP_TYPES } from "@/models/mapTypes.js";
 import geolocationService from "@/services/geolocationService.js";
 import { useMapStore } from "@/stores/map.js";
 import { useMarker } from "@/composables/map/marker.js";
+import PlacePanel from "@/components/map/panel/PlacePanel.vue";
+import { useMap } from "@/composables/map/map.js";
+import AddButton from "@/components/map/AddButton.vue";
+import DeveloperInfo from "@/components/map/DeveloperInfo.vue";
 
 // STORES
 const mapStore = useMapStore();
@@ -128,6 +132,8 @@ function scaleMarkers() {
 }
 
 // MAP
+const mapComposable = useMap();
+
 async function OnMapChanged() {
     const newZoomValue = map.value.getZoom();
     if (zoom.value !== newZoomValue) {
@@ -176,6 +182,7 @@ async function loadData() {
 
 function onMapLoad() {
     console.log('Map load!');
+    setTimeout(() => scaleMarkers(), 100);
 }
 
 function onMapUnload() {
@@ -190,8 +197,8 @@ onBeforeMount(async () => {
 });
 
 onMounted(async () => {
-    await mapStore.initialize();
-    
+    await mapComposable.initialize();
+
     map.value.on('load', onMapLoad);
     map.value.on('moveend', OnMapChanged);
     map.value.on('zoom', scaleMarkers);
@@ -199,8 +206,6 @@ onMounted(async () => {
     map.value.on('unload', onMapUnload);
 
     await loadGeohashes();
-
-    setTimeout(() => scaleMarkers(), 100);
 });
 
 onBeforeUnmount(() => {
@@ -213,6 +218,9 @@ onBeforeUnmount(() => {
         <div id="map" style="height: 100%"></div>
     </main>
     <Filter></Filter>
+    <AddButton></AddButton>
+    <PlacePanel/>
+    <DeveloperInfo/>
     <PlacePopup v-if="isPlacePopupVisible" 
                 :teleportTo="teleportTo" 
                 :popup-place="popupTargetObject" 
