@@ -1,5 +1,5 @@
 ﻿<script setup>
-import { computed, onMounted, ref, toRef, watch } from 'vue';
+import { onMounted, ref, toRef, watch } from 'vue';
 import { PLACE_TYPES_DATA } from "@/models/placeTypes.js";
 import FavoriteButton from "@/components/shared/FavoriteButton.vue";
 import { useFavoritesStore } from "@/stores/favorites.js";
@@ -10,6 +10,7 @@ import placesService from "@/services/placesService.js";
 import { useCurrentUserStore } from "@/stores/currentUser.js";
 import { storeToRefs } from "pinia";
 import PlaceImage from "@/components/shared/PlaceImage.vue";
+import { PANEL_EVENTS, panelEmitter } from "@/emitters/panelEmitter.js";
 
 const emit = defineEmits(['addEvent']);
 const props = defineProps(['teleportTo', 'popupPlace']);
@@ -22,16 +23,6 @@ const place = toRef(props.popupPlace);
 const placeEvents = toRef([]);
 const favoritesStore = useFavoritesStore();
 const isFavorite = ref(favoritesStore.isPlaceFavorite(place.value.id));
-
-const imageUrls = computed(() => {
-    const placeImageUrls = place.value.imageUrls;
-    if (placeImageUrls.length <= 4) {
-        return placeImageUrls;
-    }
-
-    const first = placeImageUrls[0];
-    return [first];
-});
 
 watch(teleportToRef, function () {});
 
@@ -61,6 +52,14 @@ async function navigateToGoogleMaps() {
     window.open(googleMapsLink, '_blank');
 }
 
+async function openPlacePanel() {
+    panelEmitter.emit(PANEL_EVENTS.OPEN);
+}
+
+function close() {
+    // TODO: Add popup close from button
+}
+
 onMounted( async() => {
     await loadEvents();
 });
@@ -72,10 +71,11 @@ onMounted( async() => {
             <Card v-if="place" class="area-popup">
                 <template #header>
                     <div v-if="place.imageIds && place.imageIds.length > 0" class="relative">
-                        <FavoriteButton class="absolute align-self-end mr-3 mt-3"
-                                        style="z-index: 100; right: 0"
-                                        :is-favorite="favoritesStore.isPlaceFavorite(place.id)"
-                                        @toggle-favorite="toggleFavoritePlace(place.id)"/>
+                        <div class="absolute flex align-items-center gap-2" style="right: 1rem; top: 1rem; z-index: 100">
+                            <FavoriteButton :is-favorite="favoritesStore.isPlaceFavorite(place.id)"
+                                            @toggle-favorite="toggleFavoritePlace(place.id)"/>
+                            <Button icon="fa fa-times" class="fa-xl bg-gray-50" text rounded @click="close"/>
+                        </div>
                         <Galleria :value="place.imageIds"
                                   :numVisible="5"
                                   :circular="true"
@@ -87,9 +87,6 @@ onMounted( async() => {
                                   indicatorsPosition="bottom">
                             <template #item="slotProps">
                                 <PlaceImage :id="slotProps.item" :place="place" style="min-width: 100%; width: 100%; height: 15rem; display: block"></PlaceImage>
-                                <!--                                <img :src="slotProps.item"-->
-                                <!--                                     :alt="place.name"-->
-                                <!--                                     style="min-width: 100%; width: 100%; height: 15rem; display: block" />-->
                             </template>
                         </Galleria>
                     </div>
@@ -100,7 +97,7 @@ onMounted( async() => {
                                         :is-favorite="favoritesStore.isPlaceFavorite(place.id)"
                                         @toggle-favorite="toggleFavoritePlace(place.id)"/>
                         <LongTextLink class="font-bold w-full text-center text-l" :to="`/?placeId=${place.id}`"
-                                      :text="place.name"/>
+                                      :text="place.name" @click="openPlacePanel"/>
                         <div>
                             {{ PLACE_TYPES_DATA[place.placeType].name }}
                         </div>

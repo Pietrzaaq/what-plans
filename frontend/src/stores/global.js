@@ -1,8 +1,9 @@
 ﻿import { computed, ref } from 'vue';
 import { defineStore } from "pinia";
 import citiesService from "@/services/citiesService.js";
+import { LOCAL_STORAGE_KEYS } from "@/models/localStorage.js";
 
-const DEFAULT_CITY_NAME = 'Łódź';
+const DEFAULT_CITY_NAME = 'Warszawa';
 
 export const useGlobalStore = defineStore(
     'global', () => {
@@ -19,8 +20,15 @@ export const useGlobalStore = defineStore(
         async function initialize() {
             _cities.value = await citiesService.getAll();
 
-            _city.value = _cities.value.find(c => c.name === DEFAULT_CITY_NAME);
-            
+            const cityFromLocalStorge = JSON.parse(localStorage.getItem(LOCAL_STORAGE_KEYS.CITY));
+            if (!cityFromLocalStorge) 
+                _city.value = _cities.value.find(c => c.name === DEFAULT_CITY_NAME);
+            else {
+                const city = _cities.value.find(c => c.name === cityFromLocalStorge.name);
+                if (city)
+                    _city.value = city;
+            }
+
             _isLoading.value = false;
         }
 

@@ -20,4 +20,8 @@ export default new class GeolocationService {
 
         return geohash.bboxes(minLat, minLong, maxLat, maxLong, precision);
     }
+    
+    getGeohash(lat, long) {
+        return geohash.encode(lat, long, 9);
+    }
 };
