@@ -108,6 +108,7 @@ public class ImagesController : BaseController
         return Ok(response);
     }
     
+    [AllowAnonymous]
     [HttpGet("{id}/binary")]
     public async Task<IActionResult> GetImageBinary(Application.Images.Get.Request request)
     {

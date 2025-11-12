@@ -16,6 +16,10 @@ import { MAP_TYPES } from "@/models/mapTypes.js";
 import geolocationService from "@/services/geolocationService.js";
 import { useMapStore } from "@/stores/map.js";
 import { useMarker } from "@/composables/map/marker.js";
+import PlacePanel from "@/components/map/panel/PlacePanel.vue";
+import { useMap } from "@/composables/map/map.js";
+import AddButton from "@/components/map/AddButton.vue";
+import DeveloperInfo from "@/components/map/DeveloperInfo.vue";
 
 // STORES
 const mapStore = useMapStore();
@@ -97,6 +101,7 @@ function navigateToCity(e) {
 }
 
 async function loadMarkers() {
+    console.log('loadMarkers', markerLayer.value);
     if (markerLayer.value) {
         map.value.removeLayer(markerLayer.value);
         markerLayer.value = null;
@@ -110,36 +115,25 @@ async function loadMarkers() {
     else
         loadPlacesMarkers();
 
-    scaleIcon();
+    scaleMarkers();
 }
 
-function scaleIcon() {
+function scaleMarkers() {
     const zoom = map.value.getZoom();
-    const scale = Math.pow(0.9, 18 - zoom);
-
     document.querySelectorAll('.place-marker').forEach(function(marker) {
-        const content = marker.querySelector('.place-marker-content');
         const label = marker.querySelector('.place-marker-label');
-        const newSize = 50 * scale;
-        const newFontSize = 25 * scale;
-        const newLabelFontSize = 15 * scale;
-        const newLineHeight = 15 * scale;
-
-        content.style.width = newSize + 'px';
-        content.style.height = newSize + 'px';
-        content.style.fontSize = newFontSize + 'px';
 
         if (zoom < 14)
             label.style.display = 'none';
         else {
             label.style.display = 'flex';
-            label.style.fontSize = newLabelFontSize + 'px';
-            label.style.lineHeight = newLineHeight + 'px';
         }
     });
 }
 
 // MAP
+const mapComposable = useMap();
+
 async function OnMapChanged() {
     const newZoomValue = map.value.getZoom();
     if (zoom.value !== newZoomValue) {
@@ -188,6 +182,7 @@ async function loadData() {
 
 function onMapLoad() {
     console.log('Map load!');
+    setTimeout(() => scaleMarkers(), 100);
 }
 
 function onMapUnload() {
@@ -202,17 +197,15 @@ onBeforeMount(async () => {
 });
 
 onMounted(async () => {
-    await mapStore.initialize();
-    
+    await mapComposable.initialize();
+
     map.value.on('load', onMapLoad);
     map.value.on('moveend', OnMapChanged);
-    map.value.on('zoom', scaleIcon);
+    map.value.on('zoom', scaleMarkers);
     map.value.on('click', onMapClick);
     map.value.on('unload', onMapUnload);
 
     await loadGeohashes();
-
-    setTimeout(() => scaleIcon(), 100);
 });
 
 onBeforeUnmount(() => {
@@ -225,6 +218,9 @@ onBeforeUnmount(() => {
         <div id="map" style="height: 100%"></div>
     </main>
     <Filter></Filter>
+    <AddButton></AddButton>
+    <PlacePanel/>
+    <DeveloperInfo/>
     <PlacePopup v-if="isPlacePopupVisible" 
                 :teleportTo="teleportTo" 
                 :popup-place="popupTargetObject" 
@@ -272,14 +268,16 @@ onBeforeUnmount(() => {
 
 .place-marker-label {
     display: flex;
+    position: absolute;
+    left: 35px;
     font-size: 10px;
     height: 100%;
     align-items: center;
     text-align: left;
-    margin-left: 4.5em;
-    max-width: 10rem;
+    max-width: 15rem;
+    text-overflow: ellipsis;
     font-weight: 500;
-    line-height: 20px;
+    line-height: 10px;
     text-shadow: 1px 1px 1px var(--gray-200);
     transition: font-size 100ms;
 }

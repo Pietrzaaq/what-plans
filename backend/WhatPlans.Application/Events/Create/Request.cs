@@ -15,7 +15,7 @@ public class Request : IRequest<Event>
     {
         public string Name { get; set; }
         public EventTypes Type { get; set; }
-        public ObjectId? PlaceId { get; set; }
+        public ObjectId PlaceId { get; set; }
         public ObjectId LocationId { get; set; }
         public string CreatorId { get; set; }
         public string Url { get; set; }

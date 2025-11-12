@@ -36,7 +36,7 @@ onMounted(() => {
 </script>
 
 <template>
-    <Accordion class="map-filter flex flex-column gap-2 absolute ">
+    <Accordion class="map-filter flex flex-column gap-2 absolute">
         <AccordionTab>
             <template #header>
                 <div class="flex flex-wrap align-items-center gap-2">

@@ -36,8 +36,7 @@ onMounted(() => {
                          @update:modelValue="onPlaceTypesChange">
                 <template #option="{ option }">
                     <div class="flex align-items-center gap-2">
-                        <font-awesome-icon :icon="`fas fa-${option.icon}`"
-                                           :style="{color: option.color}"></font-awesome-icon>
+                        <i :class="`fas fa-${option.icon}`" :style="{color: option.color}"></i>
                         <div>{{ option.name }}</div>
                     </div>
                 </template>

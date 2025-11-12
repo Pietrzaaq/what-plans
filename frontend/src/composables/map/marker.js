@@ -5,7 +5,7 @@ import { PLACE_TYPES_DATA } from "@/models/placeTypes.js";
 import L from "leaflet";
 import { EVENT_TYPES_DATA } from "@/models/eventTypes.js";
 
-export function useMarker(markerLayer, map, showPlacePopup, showEventPopup, hidePopup) {
+export function useMarker(markerLayer, map, showPlacePopup, showEventPopup, navigateToCity, hidePopup) {
     const mapStore = useMapStore();
     const filterStore = useFilterStore();
     const { eventTypes, placeTypes } = storeToRefs(filterStore);
@@ -16,7 +16,8 @@ export function useMarker(markerLayer, map, showPlacePopup, showEventPopup, hide
                 radius: city.radius,
                 className: 'city-circle'
             });
-
+            
+            circle.on('click', navigateToCity);
             circle.addTo(markerLayer.value);
         });
     }
@@ -55,15 +56,15 @@ export function useMarker(markerLayer, map, showPlacePopup, showEventPopup, hide
         const typeData = PLACE_TYPES_DATA[place.placeType];
         const html = `
             <div class="place-marker-content" style="background-color: ${typeData.markerColor}">
-                <i class="fa fa-${typeData.icon}"></i>
+                <i class="fa fa-${typeData.icon} text-lg"></i>
             </div>
             <div class="place-marker-label">${place.name}</div>`;
 
         const overlay = L.divIcon({
             className: 'place-marker',
             html: html,
-            iconSize: [50, 50],
-            iconAnchor: [25, 25]
+            iconSize: [30, 30],
+            iconAnchor: [15, 15]
         });
 
         const marker = L.marker(latLng, { icon: overlay });

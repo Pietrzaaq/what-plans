@@ -42,10 +42,20 @@ function getUserInitials(user) {
     return '';
 }
 
+async function checkTileProvider(url) {
+    try {
+        const response = await fetch(url.replace('{z}', '0').replace('{x}', '0').replace('{y}', '0'));
+        return response.ok;
+    } catch (error) {
+        return false;
+    }
+}
+
 export {
     getApiDateTime,
     getUniqueString,
     groupBy,
     getUserInitials,
-    getImageUrl
+    getImageUrl,
+    checkTileProvider
 };

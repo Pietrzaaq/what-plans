@@ -80,20 +80,25 @@ onBeforeMount(() => {
         </template>
         <template #content>
             <div class="user-details max-w-30rem">
+                <div v-if="user.isAdmin" class="w-full">
+                    <Chip label="Admin" icon="fa fa-user-tie"></Chip>
+                </div>
+                <div v-if="user.isOrganizer" class="w-full">
+                    <Chip label="Organizer" icon="fa fa-screwdriver-wrench"></Chip>
+                </div>
                 <div class="flex align-items-center gap-2 h-full">
                     <UserAvatar v-if="!uploadedImage" :user="user" :size="AVATAR_SIZE.XLARGE"></UserAvatar>
                     <Avatar v-else :image="uploadedImage" :size="AVATAR_SIZE.XLARGE" shape="circle"></Avatar>
                     <div class="flex flex-column align-items-start">
-                        <FileUpload
-                            mode="basic"
-                            class="file-upload-avatar p-button-icon-only p-button-info p-button-rounded p-button-text"
-                            name="avatar"
-                            accept="image/*"
-                            upload-icon="fas fa-pen"
-                            auto
-                            customUpload
-                            :maxFileSize="5_000_000"
-                            @select="onAvatarSelect"/>
+                        <FileUpload mode="basic"
+                                    class="file-upload-avatar p-button-icon-only p-button-info p-button-rounded p-button-text"
+                                    name="avatar"
+                                    accept="image/*"
+                                    upload-icon="fas fa-pen"
+                                    auto
+                                    customUpload
+                                    :maxFileSize="5_000_000"
+                                    @select="onAvatarSelect"/>
                         <Button icon="pi pi-trash" severity="danger" aria-label="Delete" text rounded @click="deleteAvatar"/>
                     </div>
                 </div>

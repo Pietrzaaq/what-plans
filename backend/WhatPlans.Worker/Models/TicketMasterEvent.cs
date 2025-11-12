@@ -72,6 +72,7 @@ public class EventDates
 public class EventStart
 {
     public string LocalDate { get; set; }
+    public string LocalTime { get; set; }
     public bool DateTBD { get; set; }
     public bool DateTBA { get; set; }
     public bool TimeTBA { get; set; }
