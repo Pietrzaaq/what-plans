@@ -11,30 +11,37 @@ public class Worker : BackgroundService
     private readonly GeoJsonService _geoJsonService;
     private readonly MongoService _mongoService;
     private readonly ImageService _imageService;
+    private readonly PlacesCleanupService _placesCleanupService;
 
-    public Worker(ILogger<Worker> logger, CitiesService citiesService, GeoJsonService geoJsonService, MongoService mongoService, ImageService imageService)
+    public Worker(ILogger<Worker> logger, CitiesService citiesService, GeoJsonService geoJsonService, MongoService mongoService, ImageService imageService, PlacesCleanupService placesCleanupService)
     {
         _logger = logger;
         _citiesService = citiesService;
         _geoJsonService = geoJsonService;
         _mongoService = mongoService;
         _imageService = imageService;
+        _placesCleanupService = placesCleanupService;
     }
 
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
     {
         _logger.LogInformation("Worker starting at: {time}", DateTimeOffset.Now);
 
+        // await UpdatePlaces();
+
         // await LoadCitiesFromJsonFiles();
 
         // await AddGeohashToPlaces();
-
+        //
         // await AddCitiesToDatabase();
 
         // await SetCityRadius();
 
-        await MigrateImages();
-        
+        // await MigrateImages();
+
+        // await _placesCleanupService.CleanupPlaces();
+
+        await _mongoService.MigrateEnumsToStrings();
         _logger.LogInformation("Worker finished job at: {time}", DateTimeOffset.Now);
     }
 
@@ -127,16 +134,16 @@ public class Worker : BackgroundService
 
     private async Task LoadCitiesFromJsonFiles()
     {
-        var cities = _citiesService.LoadCities("Data/cities.json");
-
-        _logger.LogInformation("Loaded {cities} cities from cities.json at: {time}", cities.Count, DateTimeOffset.Now);
+        // var cities = _citiesService.LoadCities("Data/cities.json");
+        //
+        // _logger.LogInformation("Loaded {cities} cities from cities.json at: {time}", cities.Count, DateTimeOffset.Now);
         
-        var geoJsonFiles = Directory.GetFiles("Data", "*.geojson");
+        var geoJsonFiles = Directory.GetFiles("Data", "export.geojson");
         foreach (var filePath in geoJsonFiles)
         {
             _logger.LogInformation("Loading places from geojson {geoJson} at: {time}", filePath, DateTimeOffset.Now);
             
-            var places = await _geoJsonService.ParseGeoJsonFile(filePath, cities);
+            var places = await _geoJsonService.ParseGeoJsonFile(filePath);
             
             _logger.LogInformation("Loaded {places} places at: {time}", places.Count, DateTimeOffset.Now);
             
@@ -144,5 +151,18 @@ public class Worker : BackgroundService
             
             _logger.LogInformation("Saved places to database at: {time}", DateTimeOffset.Now);
         }
+    }
+    
+    private async Task UpdatePlaces()
+    {
+        await _geoJsonService.CleanupPlaces();
+        // await _geoJsonService.UpdatePlacesCityId();
+
+
+        // var geoJsonFiles = Directory.GetFiles("Data", "export.geojson");
+        // foreach (var filePath in geoJsonFiles)
+        // {
+        //     await _geoJsonService.UpdatePlaces(filePath);
+        // }
     }
 }

@@ -7,6 +7,8 @@ builder.Services.AddSingleton<CitiesService>();
 builder.Services.AddSingleton<GeoJsonService>();
 builder.Services.AddSingleton<MongoService>();
 builder.Services.AddSingleton<ImageService>();
+builder.Services.AddSingleton<PlacesCleanupService>();
+builder.Services.AddHttpClient();
 
 var host = builder.Build();
 host.Run();

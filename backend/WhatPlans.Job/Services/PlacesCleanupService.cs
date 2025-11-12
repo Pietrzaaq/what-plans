@@ -64,8 +64,12 @@ public class PlacesCleanupService
                 {
                     place.Location.Address = address.Address;
                     place.Location.FormatedAddress = address.DisplayName;
-                    place.Location.CityName = address.City ?? address.Town ?? address.Village;
-                    place.Location.ProvinceName = address.State;
+                    
+                    if (string.IsNullOrWhiteSpace(place.Location.CityName))
+                        place.Location.CityName = address.City ?? address.Town ?? address.Village;
+                    
+                    if (string.IsNullOrWhiteSpace(place.Location.ProvinceName))
+                        place.Location.ProvinceName = address.State;
                     
                     if (int.TryParse(address.HouseNumber, out int houseNum))
                         place.Location.HouseNumber = houseNum;
@@ -73,7 +77,13 @@ public class PlacesCleanupService
                     needsUpdate = true;
                     addressesFetched++;
                     
+                    Console.WriteLine($"Fetched address for place {place.Id}: {address.DisplayName}");
+                    
                     await Task.Delay(1100);
+                }
+                else
+                {
+                    await Task.Delay(2000);
                 }
             }
             
@@ -203,28 +213,47 @@ public class PlacesCleanupService
     {
         try
         {
-            var url = $"https://nominatim.openstreetmap.org/reverse?format=jsonv2&lat={latitude:F7}&lon={longitude:F7}&addressdetails=1&zoom=18";
+            // Validate coordinates
+            if (latitude < -90 || latitude > 90 || longitude < -180 || longitude > 180)
+            {
+                Console.WriteLine($"Invalid coordinates: lat={latitude}, lon={longitude}");
+                return null;
+            }
+            
+            // Use invariant culture to ensure decimal point (not comma)
+            var lat = latitude.ToString("F7", System.Globalization.CultureInfo.InvariantCulture);
+            var lon = longitude.ToString("F7", System.Globalization.CultureInfo.InvariantCulture);
+            
+            var url = $"https://nominatim.openstreetmap.org/reverse?format=json&lat={lat}&lon={lon}&addressdetails=1";
+            
+            Console.WriteLine($"Fetching address from: {url}");
             
             var response = await _httpClient.GetAsync(url);
             
             if (!response.IsSuccessStatusCode)
             {
-                Console.WriteLine($"Failed to fetch address for {latitude}, {longitude}: {response.StatusCode}");
+                var errorContent = await response.Content.ReadAsStringAsync();
+                Console.WriteLine($"Failed to fetch address for {latitude}, {longitude}");
+                Console.WriteLine($"Status: {response.StatusCode}, Error: {errorContent}");
                 return null;
             }
             
             var content = await response.Content.ReadAsStringAsync();
             var result = JsonSerializer.Deserialize<NominatimResponse>(content, new JsonSerializerOptions 
             { 
-                PropertyNameCaseInsensitive = true 
+                PropertyNameCaseInsensitive = true,
+                PropertyNamingPolicy = JsonNamingPolicy.CamelCase
             });
             
             if (result?.Address == null)
+            {
+                Console.WriteLine($"No address data returned for {latitude}, {longitude}");
                 return null;
+            }
             
             return new NominatimAddress
             {
-                Address = result.Address.Road ?? result.Address.Suburb ?? result.Address.City,
+                Address = result.Address.Road ?? result.Address.Suburb ?? result.Address.City ?? result.Address.Town,
                 DisplayName = result.DisplayName,
                 City = result.Address.City,
                 Town = result.Address.Town,
@@ -233,12 +262,24 @@ public class PlacesCleanupService
                 HouseNumber = result.Address.HouseNumber
             };
         }
+        catch (HttpRequestException ex)
+        {
+            Console.WriteLine($"HTTP error fetching address from Nominatim: {ex.Message}");
+            return null;
+        }
+        catch (TaskCanceledException ex)
+        {
+            Console.WriteLine($"Request timeout fetching address from Nominatim: {ex.Message}");
+            return null;
+        }
         catch (Exception ex)
         {
             Console.WriteLine($"Error fetching address from Nominatim: {ex.Message}");
             return null;
         }
     }
+    
+    
 }
 
 // DTOs for Nominatim API

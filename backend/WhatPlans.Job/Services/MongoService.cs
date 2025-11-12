@@ -2,6 +2,7 @@
 using MongoDB.Bson;
 using MongoDB.Driver;
 using WhatPlans.Domain.Entities;
+using WhatPlans.Domain.Enums;
 
 namespace WhatPlans.Job.Services;
 
@@ -30,6 +31,13 @@ public class MongoService
         var placesCollection = _database.GetCollection<Place>("Places");
         
         return await placesCollection.Find(_ => true).ToListAsync();
+    }
+    
+    public async Task<List<City>> GetCities()
+    {
+        var citiesCollection = _database.GetCollection<City>("Cities");
+        
+        return await citiesCollection.Find(_ => true).ToListAsync();
     }
 
     public async Task UpdatePlacesGeohash(List<Place> places)
@@ -93,5 +101,53 @@ public class MongoService
         var updateDefinition = Builders<Place>.Update.Set(p => p.ImageIds, imageIds);
         
         placesCollection.UpdateOneAsync(Builders<Place>.Filter.Eq(c => c.Id, placeId), updateDefinition);
+    }
+    
+    public async Task UpdatePlace(Place place)
+    {
+        var placesCollection = _database.GetCollection<Place>("Places");
+        
+        await placesCollection.ReplaceOneAsync(p => p.Id == place.Id, place);
+    }
+    
+    public async Task DeletePlace(Place place)
+    {
+        var placesCollection = _database.GetCollection<Place>("Places");
+        
+        await placesCollection.DeleteOneAsync(p => p.Id == place.Id);
+    }
+    
+    public async Task UpdateCity(City city)
+    {
+        var citiesCollection = _database.GetCollection<City>("Cities");
+    
+        await citiesCollection.ReplaceOneAsync(c => c.Id == city.Id, city);
+    }
+    
+    public async Task MigrateEnumsToStrings()
+    {
+        var placesCollection = _database.GetCollection<BsonDocument>("Places");
+        var allPlaces = await placesCollection.Find(new BsonDocument()).ToListAsync();
+    
+        foreach (var place in allPlaces)
+        {
+            if (place.Contains("PlaceType") && place["PlaceType"].IsInt32)
+            {
+                var placeTypeInt = place["PlaceType"].AsInt32;
+                var placeTypeName = ((PlaceTypes)placeTypeInt).ToString();
+            
+                var placeCategoryInt = place["PlaceCategory"].AsInt32;
+                var placeCategoryName = ((PlaceCategory)placeCategoryInt).ToString();
+            
+                var update = Builders<BsonDocument>.Update
+                    .Set("PlaceType", placeTypeName)
+                    .Set("PlaceCategory", placeCategoryName);
+            
+                await placesCollection.UpdateOneAsync(
+                    Builders<BsonDocument>.Filter.Eq("_id", place["_id"]),
+                    update
+                );
+            }
+        }
     }
 }
