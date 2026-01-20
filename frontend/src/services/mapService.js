@@ -2,21 +2,29 @@
 import { getApiDateTime } from "@/helpers/helpers.js";
 export default new class MapService {
 
-    async getPlaces(geohashes) {
+    async getPlaces(geohash, bbox) {
         return await axios.get(`${import.meta.env.VITE_API_BASE_URL}/map/places`, {
             params: {
-                geohashes: geohashes
+                geohash: geohash,
+                north: bbox.north,
+                west: bbox.west,
+                south: bbox.south,
+                east: bbox.east
             }
         }).then(response => response.data);
     }
 
-    async getEvents(geohashes, startDate, endDate) {
+    async getEvents(geohash, bbox, startDate, endDate) {
         let config;
         
         if (startDate && endDate) {
             config = {
                 params: {
-                    geohashes: geohashes,
+                    geohash: geohash,
+                    north: bbox.north,
+                    west: bbox.west,
+                    south: bbox.south,
+                    east: bbox.east,
                     startDate: getApiDateTime(startDate),
                     endDate: getApiDateTime(endDate)
                 }
@@ -25,7 +33,11 @@ export default new class MapService {
         else {
             config = {
                 params: {
-                    geohashes: geohashes
+                    geohash: geohash,
+                    north: bbox.north,
+                    west: bbox.west,
+                    south: bbox.south,
+                    east: bbox.east
                 }
             };
         }

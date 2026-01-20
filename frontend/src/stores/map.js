@@ -2,7 +2,6 @@
 import { defineStore } from "pinia";
 import { MAP_TYPES } from "@/models/mapTypes.js";
 import mapService from "@/services/mapService.js";
-import L from 'leaflet';
 import { useFilterStore } from "@/stores/filter.js";
 
 const DEFAULT_COORDINATES = [51.769406790090855, 19.43750792680422];
@@ -16,46 +15,34 @@ export const useMapStore = defineStore(
         const _tileLayer = ref(null);
         const _center = ref(DEFAULT_COORDINATES);
         const _zoom = ref(DEFAULT_ZOOM);
+        const _geohash = ref(null);
+        const _bbox = ref(null);
         const _data = ref([]);
-        const _loadedGeohashes = ref([]);
-        const _currentGeohashes = ref([]);
-        const _geohashesToLoad = ref([]);
-        const _geohashPrecision = ref(4);
 
         const map = computed(() => _map.value);
         const tileLayer = computed(() => _tileLayer.value);
         const center = computed(() => _center.value);
+        const geohash = computed(() => _geohash.value);
+        const bbox = computed(() => _bbox.value);
         const zoom = computed(() => _zoom.value);
         const data = computed(() => _data.value);
-        const loadedGeohashes = computed(() => _loadedGeohashes.value);
-        const currentGeohashes = computed(() => _currentGeohashes.value);
-        const geohashesToLoad = computed(() => _geohashesToLoad.value);
-        const geohashPrecision = computed(() => _geohashPrecision.value);
 
-        async function loadData(mapType) {
-            if (_geohashPrecision.value < 4) {
-                const cities = await mapService.getCities(geohashesToLoad.value);
-                _data.value.push(...cities);
-            }
-            else if (mapType === MAP_TYPES.EVENT) {
+        async function loadData() {
+            if (filterStore.mapType === MAP_TYPES.EVENT) {
                 const startDate= filterStore.startDate;
                 const endDate = filterStore.endDate;
-                const events = await mapService.getEvents(geohashesToLoad.value, startDate, endDate);
-                _data.value.push(...events);
+                const events = await mapService.getEvents(_geohash.value, _bbox.value, startDate, endDate);
+                _data.value = events;
             }
             else {
-                const places = await mapService.getPlaces(geohashesToLoad.value);
-                _data.value.push(...places);
+                const places = await mapService.getPlaces(_geohash.value, _bbox.value);
+                _data.value = places;
             }
-
-            _loadedGeohashes.value.push(...geohashesToLoad.value);
-            _geohashesToLoad.value = [];
         }
         
         function clear() {
             _data.value = [];
-            _loadedGeohashes.value = [];
-            _geohashesToLoad.value = [];
+            _geohash.value = null;
         }
 
         function destroy() {
@@ -77,20 +64,16 @@ export const useMapStore = defineStore(
             _center.value = center;
         }
         
-        function setZoom(zoom) {
-            _zoom.value = zoom;
-        }
-        
-        function setGeohashPrecision(precision) {
-            _geohashPrecision.value = precision;
+        function setGeohash(geohash) {
+            _geohash.value = geohash;
         }
 
-        function setCurrentGeohashes(geohashes) {
-            _currentGeohashes.value = geohashes;
+        function setBbox(bbox) {
+            _bbox.value = bbox;
         }
         
-        function setGeohashesToLoad(geohashesToLoad) {
-            _geohashesToLoad.value = geohashesToLoad;
+        function setZoom(zoom) {
+            _zoom.value = zoom;
         }
 
         return {
@@ -99,19 +82,16 @@ export const useMapStore = defineStore(
             center,
             zoom,
             data,
-            loadedGeohashes,
-            currentGeohashes,
-            geohashesToLoad,
-            geohashPrecision,
+            geohash,
+            bbox,
             destroy,
             loadData,
             clear,
             setMap,
             setTileLayer,
             setCenter,
+            setGeohash,
             setZoom,
-            setGeohashPrecision,
-            setCurrentGeohashes,
-            setGeohashesToLoad
+            setBbox
         };
     });

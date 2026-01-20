@@ -44,7 +44,6 @@ async function navigateToPlaceUrl() {
     window.open(place.value.url, '_blank');
 }
 
-
 async function navigateToGoogleMaps() {
     const location = place.value.location;
     const googleMapsLink = `https://www.google.com/maps/search/?api=1&query=${location.latitude},${location.longitude}`;

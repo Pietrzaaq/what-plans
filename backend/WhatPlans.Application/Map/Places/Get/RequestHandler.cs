@@ -16,10 +16,34 @@ public class RequestHandler : IRequestHandler<Request, List<Place>>
     
     public async Task<List<Place>> Handle(Request request, CancellationToken cancellationToken)
     {
-        var geohashes = request.Geohashes;
+        var geohash = request.Geohash;
 
-        var result = await _mongoContext.Places.Find(p => geohashes.Any(g => p.Location.Geohash.Contains(g))).ToListAsync(cancellationToken: cancellationToken);
+        var geohashPlaces = await _mongoContext.Places
+            .Find(p => p.Location.Geohash.Contains(geohash))
+            .ToListAsync(cancellationToken: cancellationToken);
+
+        var result = geohashPlaces
+            .Where(p =>
+                p.Location.Latitude < request.North &&
+                p.Location.Latitude > request.South &&
+                p.Location.Longitude < request.West &&
+                p.Location.Longitude > request.East)
+            .Take(GetResultLimit(geohash.Length))
+            .ToList();
 
         return result;
+    }
+
+    private int GetResultLimit(int geohashPrecision)
+    {
+        return geohashPrecision switch
+        {
+            6 => 20,
+            5 => 50,
+            4 => 100,
+            3 => 200,
+            2 => 500,
+            _ => 1000
+        };
     }
 }

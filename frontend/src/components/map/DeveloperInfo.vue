@@ -18,14 +18,18 @@ const center = computed(() => {
 const geohash = computed(() => {
     const lat = mapStore.center[0];
     const long = mapStore.center[1];
-    return geolocationService.getGeohash(lat, long);
+    return geolocationService.getGeohash(lat, long, mapStore.zoom);
 });
 
 const bounds = computed(() => {
     if (!mapStore.map || !mapStore.center)
         return;
     
-    const bounds = mapStore.map.getBounds();
+    const bounds = mapStore.map?.getBounds();
+    
+    if (!bounds)
+        return;
+            
     return [
         bounds.getNorthEast().lat.toString().slice(0, 4),
         bounds.getNorthEast().lng.toString().slice(0, 4),
@@ -60,7 +64,11 @@ const bounds = computed(() => {
             </div>
             <div>
                 <div>City:</div>
-                <div class="font-bold">{{ globalStore.city.name }}</div>
+                <div class="font-bold">{{ globalStore?.city?.name }}</div>
+            </div>
+            <div>
+                <div>Data count:</div>
+                <div class="font-bold">{{ mapStore?.data?.length }}</div>
             </div>
         </div>
     </div>
@@ -71,8 +79,8 @@ const bounds = computed(() => {
     z-index: 400;
     right: 0rem;
     bottom: 0rem;
-    height: 15rem;
-    width: 15rem;
+    height: 18rem;
+    width: 18rem;
     background-color: rgba(128, 128, 128, 0.8);
 }
 </style>

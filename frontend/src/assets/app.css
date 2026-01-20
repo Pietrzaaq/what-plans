@@ -17,12 +17,6 @@
     width: 100%;
 }
 
-.leaflet-pane > svg path.leaflet-interactive:hover {
-    color: black;
-    stroke: black;
-    fill: black;
-}
-
 .leaflet-popup .leaflet-popup-tip-container {
     display: none
 }

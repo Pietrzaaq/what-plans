@@ -6,6 +6,18 @@ namespace WhatPlans.Application.Map.Places.Get;
 
 public class Request : IRequest<List<Place>>
 {
-    [FromQuery(Name = "geohashes[]")]
-    public List<string> Geohashes { get; set; }
+    [FromQuery]
+    public string Geohash { get; set; }
+    
+    [FromQuery]
+    public double North { get; set; }    
+    
+    [FromQuery]
+    public double South { get; set; }    
+    
+    [FromQuery]
+    public double East { get; set; }    
+    
+    [FromQuery]
+    public double West { get; set; }
 }

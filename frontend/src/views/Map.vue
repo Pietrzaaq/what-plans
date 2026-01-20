@@ -23,7 +23,7 @@ import DeveloperInfo from "@/components/map/DeveloperInfo.vue";
 
 // STORES
 const mapStore = useMapStore();
-const { map, zoom, center, currentGeohashes, loadedGeohashes, geohashesToLoad, geohashPrecision } = storeToRefs(mapStore);
+const { map, zoom, center } = storeToRefs(mapStore);
 
 const filterStore = useFilterStore();
 const { mapType, eventTypes, placeTypes, startDate } = storeToRefs(filterStore);
@@ -34,21 +34,21 @@ const { city, searchItem } = storeToRefs(globalStore);
 // FILTER
 watch(mapType, async() => {
     mapStore.clear();
-    await loadGeohashes();
+    await loadData();
 });
 
 watch(eventTypes, async() => {
-    await loadMarkers();
+    loadMarkers();
 });
 
 
 watch(placeTypes, async() => {
-    await loadMarkers();
+    loadMarkers();
 });
 
 watch(startDate, async() => {
     mapStore.clear();
-    await loadGeohashes();
+    await loadData();
 });
 
 // CITY
@@ -94,28 +94,46 @@ const { teleportTo, isPlacePopupVisible, isEventPopupVisible, popupTargetObject,
 
 // MARKERS
 const markerLayer = ref(null);
-const { loadCitiesCircles, loadPlacesMarkers, loadEventsMarkers } = useMarker(markerLayer, map, showPlacePopup, showEventPopup, hidePopup, navigateToCity);
+const geohashes = ref([]);
+const geohashesLayer = ref([]);
+const { loadPlacesMarkers, loadEventsMarkers } = useMarker(markerLayer, map, showPlacePopup, showEventPopup, hidePopup, navigateToCity);
 
 function navigateToCity(e) {
     console.log('Navigate', e);
 }
 
-async function loadMarkers() {
+function loadMarkers() {
     console.log('loadMarkers', markerLayer.value);
     if (markerLayer.value) {
         map.value.removeLayer(markerLayer.value);
         markerLayer.value = null;
     }
     markerLayer.value = L.layerGroup().addTo(map.value);
-
-    if (geohashPrecision.value < 4) 
-        loadCitiesCircles();
-    else if (mapType.value === MAP_TYPES.EVENT)
+    
+    if (mapType.value === MAP_TYPES.EVENT)
         loadEventsMarkers();
     else
         loadPlacesMarkers();
 
     scaleMarkers();
+}
+
+function loadGeohashes() {
+    const bounds = map.value.getBounds();
+    const currGeohashes = geolocationService.getBoundingBoxGeohashes(bounds, zoom.value);
+
+    for (const geohash of currGeohashes) {
+        const geohashBounds = geolocationService.getGeohashBounds(geohash);
+        const geohashRect = L.rectangle(
+            [[geohashBounds[0], geohashBounds[1]], [geohashBounds[2], geohashBounds[3]]],
+            { color: 'red', fillOpacity: 0.1, weight: 3, fill: false }
+        );
+        geohashRect.id = geohash;
+        if (!geohashes.value.includes(geohashRect.id)) {
+            geohashRect.addTo(geohashesLayer.value);
+            geohashes.value.push(geohashRect.id);
+        }
+    }
 }
 
 function scaleMarkers() {
@@ -134,50 +152,39 @@ function scaleMarkers() {
 // MAP
 const mapComposable = useMap();
 
-async function OnMapChanged() {
-    const newZoomValue = map.value.getZoom();
-    if (zoom.value !== newZoomValue) {
-        mapStore.setZoom(newZoomValue);
-    }
-
+async function OnMapMoveEnd() {
     const newCenterValue = map.value.getCenter();
     if (center.value.lat !== newCenterValue.lat && center.value.lng !== newCenterValue.lng) {
         const newCenter = [newCenterValue.lat, newCenterValue.lng];
         mapStore.setCenter(newCenter);
+        
+        const geohash = geolocationService.getGeohash(newCenter[0], newCenter[1], zoom.value);
+        mapStore.setGeohash(geohash);
+
+        const bounds = map.value.getBounds();
+        const bbox = {
+            north: bounds._northEast.lat,
+            west: bounds._northEast.lng,
+            south: bounds._southWest.lat,
+            east: bounds._southWest.lng,
+        };
+        mapStore.setBbox(bbox);
     }
     
-    await loadGeohashes();
+    await loadData();
+    loadMarkers();
+    loadGeohashes();
 }
 
-async function loadGeohashes() {
-    const precision = geolocationService.getGeohashPrecision(zoom.value);
-
-    if (geohashPrecision.value !== precision) {
-        mapStore.setGeohashPrecision(precision);
-        mapStore.clear();
-    }
-
-    const bounds = map.value.getBounds();
-    const currGeohashes = geolocationService.getBoundingBoxGeohashes(bounds, geohashPrecision.value);
-    mapStore.setCurrentGeohashes(currGeohashes);
-
-    const geoToLoad = currentGeohashes.value.filter(g => !loadedGeohashes.value.includes(g));
-    mapStore.setGeohashesToLoad(geoToLoad);
-    
-    if (geohashesToLoad.value.length > 0) {
-        await loadData();
+async function OnMapZoomEnd() {
+    const newZoomValue = map.value.getZoom();
+    if (zoom.value !== newZoomValue) {
+        mapStore.setZoom(newZoomValue);
     }
 }
 
 async function loadData() {
-    let isModified;
-    const dataCount = mapStore.data.length;
-
-    await mapStore.loadData(mapType.value);
-
-    isModified = dataCount !== mapStore.data.length;
-    if (isModified)
-        await loadMarkers();
+    await mapStore.loadData();
 }
 
 function onMapLoad() {
@@ -200,12 +207,17 @@ onMounted(async () => {
     await mapComposable.initialize();
 
     map.value.on('load', onMapLoad);
-    map.value.on('moveend', OnMapChanged);
+    map.value.on('moveend', OnMapMoveEnd);
+    map.value.on('zoomend', OnMapZoomEnd);
     map.value.on('zoom', scaleMarkers);
     map.value.on('click', onMapClick);
     map.value.on('unload', onMapUnload);
+    
+    geohashesLayer.value = L.layerGroup().addTo(map.value);
 
-    await loadGeohashes();
+    await loadData();
+    loadMarkers();
+    loadGeohashes();
 });
 
 onBeforeUnmount(() => {

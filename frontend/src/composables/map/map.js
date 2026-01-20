@@ -2,6 +2,8 @@
 import { useMapStore } from "@/stores/map.js";
 import L from "leaflet";
 import { checkTileProvider } from "@/helpers/helpers.js";
+import { useGlobalStore } from "@/stores/global.js";
+import geolocationService from "@/services/geolocationService.js";
 
 const OPEN_STREET_MAP_TILE_URL = 'https://tile.openstreetmap.org/{z}/{x}/{y}.png';
 const MAX_ZOOM = 19;
@@ -9,6 +11,7 @@ const MIN_ZOOM = 6;
 
 export function useMap() {
     const mapStore = useMapStore();
+    const globalStore = useGlobalStore();
     async function initialize() {
         loadCenter();
         
@@ -16,7 +19,8 @@ export function useMap() {
             center: mapStore.center,
             zoom: mapStore.zoom,
             doubleClickZoom: false,
-            zoomAnimation: true
+            zoomAnimation: true,
+            zoomSnap: 1
         });
         mapStore.setMap(map);
 
@@ -29,12 +33,25 @@ export function useMap() {
             minZoom: MIN_ZOOM,
             maxZoom: MAX_ZOOM,
             closePopupOnClick: false,
-            attribution: '&copy; <a href="http://www.openstreetmap.org/copyright">OpenStreetMap</a>'
+            attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
         });
         mapStore.setTileLayer(tileLayer);
+
+        const geohash = geolocationService.getGeohash(mapStore.center[0], mapStore.center[1], mapStore.zoom);
+        mapStore.setGeohash(geohash);
+
+        const bounds = mapStore.map.getBounds();
+        const bbox = {
+            north: bounds._northEast.lat,
+            west: bounds._northEast.lng,
+            south: bounds._southWest.lat,
+            east: bounds._southWest.lng,
+        };
+        mapStore.setBbox(bbox);
     }
     
     function loadCenter() {
+        if (globalStore.city)
         navigator.geolocation.getCurrentPosition((position) => {
             if (!position.latitude || !position.longitude )
                 return;
