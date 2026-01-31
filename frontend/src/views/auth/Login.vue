@@ -15,7 +15,7 @@ const email = ref('');
 const password = ref('');
 
 const logoUrl = computed(() => {
-    return `../../public/layout/images/logo-purple-dark.png`;
+    return `../../public/layout/images/logo.png`;
 });
 
 async function login() {

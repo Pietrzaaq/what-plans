@@ -29,7 +29,7 @@ watch(user, () => {
 });
 
 const logoUrl = computed(() => {
-    return `layout/images/logo-purple-dark.png`;
+    return `layout/images/logo.png`;
 });
 
 const onTopBarMenuButton = () => {

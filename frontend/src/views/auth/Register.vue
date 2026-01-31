@@ -19,7 +19,7 @@ const birthdate = ref(null);
 const checked = ref(false);
 
 const logoUrl = computed(() => {
-    return `../../public/layout/images/logo-purple-dark.png`;
+    return `../../public/layout/images/logo.png`;
 });
 
 async function register() {
