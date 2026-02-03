@@ -43,9 +43,9 @@ export function useMap() {
         const bounds = mapStore.map.getBounds();
         const bbox = {
             north: bounds._northEast.lat,
-            west: bounds._northEast.lng,
+            east: bounds._northEast.lng,
+            west: bounds._southWest.lng,
             south: bounds._southWest.lat,
-            east: bounds._southWest.lng,
         };
         mapStore.setBbox(bbox);
     }
