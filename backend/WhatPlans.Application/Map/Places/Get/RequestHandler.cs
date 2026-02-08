@@ -27,6 +27,13 @@ public class RequestHandler : IRequestHandler<Request, List<Place>>
         sw.Start();
         
         var geohash = request.Geohash;
+        var bbox = new BoundingBox()
+        {
+            MaxLat = request.North,
+            MinLat = request.South,
+            MaxLng = request.East,
+            MinLng = request.West
+        };
         List<Place> places;
         
         var geohasher = new Geohasher();
@@ -38,11 +45,7 @@ public class RequestHandler : IRequestHandler<Request, List<Place>>
         Dictionary<string, BoundingBox> neighbourGeohashesBBoxes = neighbourGeohashes
             .ToDictionary(g => g, g => geohasher.GetBoundingBox(g));
         var visibleNeighbourGeohashes = neighbourGeohashesBBoxes
-            .Where(b => 
-                b.Value.MaxLat > request.North && b.Value.MinLng < request.West ||
-                b.Value.MinLat < request.South && b.Value.MinLng < request.West ||
-                b.Value.MaxLat > request.North && b.Value.MaxLng > request.East ||
-                b.Value.MinLat < request.South && b.Value.MinLng > request.East)
+            .Where(b => IsOverlapping(b.Value, bbox))
             .ToList()
             .Select(b => b.Key)
             .ToList();
@@ -86,6 +89,17 @@ public class RequestHandler : IRequestHandler<Request, List<Place>>
         _logger.LogInformation($"Filtered places by bbox in {sw.ElapsedMilliseconds} ms.");
         
         return result;
+    }
+
+    private bool IsOverlapping(BoundingBox bbox1, BoundingBox bbox2)
+    {
+        if (bbox1.MaxLat < bbox2.MinLat || bbox2.MaxLat <= bbox1.MinLat)
+            return false;
+        
+        if (bbox1.MaxLng <= bbox2.MinLng || bbox2.MaxLng <= bbox1.MinLng)
+            return false;
+        
+        return true;
     }
 
     private int GetResultLimit(int geohashPrecision)
